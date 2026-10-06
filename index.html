@@ -883,8 +883,15 @@ function panel(n){document.querySelectorAll('.admin-panel').forEach(x=>x.classLi
 async function assignments(){const b=$('assignments-table');try{const [rows,providers,ps]=await Promise.all([api(`${tables.bookings}?select=*&status=in.(pending,confirmed,assigned)&order=preferred_date.asc,preferred_time.asc&limit=200`),api(`${tables.providers}?select=id,full_name,profession,service_area,verification_status,active&verification_status=eq.verified&active=eq.true&order=full_name.asc`),api(`${tables.providerServices||'provider_services'}?select=id,provider_id,service_id,rate_type,rate_amount,active&active=eq.true`)]);const servicesList=await api(`${tables.services}?select=id,name&active=eq.true&order=name.asc`);const svcById=Object.fromEntries(servicesList.map(s=>[s.id,s.name]));const psByService={};ps.forEach(x=>{(psByService[x.service_id]??=[]).push(x.provider_id)});const providerMap=Object.fromEntries(providers.map(p=>[p.id,p]));const optionsFor=serviceName=>{const sid=servicesList.find(s=>s.name.toLowerCase()===String(serviceName||'').toLowerCase())?.id;const ids=psByService[sid]||[];return providers.filter(p=>ids.includes(p.id)).map(p=>`<option value="${esc(p.id)}">${esc(p.full_name)} — ${esc(p.profession)} (${esc(p.service_area||'')})</option>`).join('')};b.innerHTML=rows.length?rows.map(x=>{const name=x.provider_id?(providerMap[x.provider_id]?.full_name||'Assigned helper'):'Unassigned';return `<tr><td class="font-semibold">${esc(x.id).slice(0,8)}…</td><td>${esc(x.service_name||x.service||'')}</td><td>${esc(x.preferred_date||'')} ${esc(x.preferred_time||'')}</td><td>${esc(x.location||'')}</td><td>${esc(name)}</td><td><select class="admin-input text-xs" data-assign-booking="${esc(x.id)}"><option value="">${x.provider_id?'Change / unassign':'Select helper'}</option>${optionsFor(x.service_name||x.service)}</select></td><td>${esc(x.status||'pending')}</td></tr>`}).join(''):'<tr><td colspan="7">No pending, confirmed or assigned bookings.</td></tr>'}catch(e){b.innerHTML=`<tr><td colspan="7" class="text-red-600">${esc(e.message)}</td></tr>`}}
 $('assignments-refresh')?.addEventListener('click',assignments);
 document.addEventListener('change',async e=>{const a=e.target.closest('[data-assign-booking]');if(!a)return;try{const id=a.dataset.assignBooking;const providerId=a.value||null;await api(`${tables.bookings}?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({provider_id:providerId,status:providerId?'assigned':'confirmed',updated_at:new Date().toISOString()})});const m=$('assignments-message');m.textContent=providerId?'Helper assigned successfully.':'Helper assignment removed.';m.className='mb-4 rounded-lg p-3 text-sm bg-emerald-50 text-emerald-700';await assignments()}catch(err){const m=$('assignments-message');m.textContent=err.message;m.className='mb-4 rounded-lg p-3 text-sm bg-red-50 text-red-700'}});
-function enter(){document.body.classList.add('admin-mode');panel('overview');const c=supabase();connection(!!(c.url&&c.key&&!c.url.startsWith('YOUR_')&&!c.key.startsWith('YOUR_')),c.url&&c.key&&!c.url.startsWith('YOUR_')&&!c.key.startsWith('YOUR_')?'Supabase connected.':'Supabase connection is not configured in this file.')}
-function enterAuthenticated(){document.body.classList.add('admin-mode');panel('overview')}
+async function enter(){
+  if(window.TASKMTAANI_ADMIN_TOKEN){enterAuthenticated();return true;}
+  if(!window.TaskMtaaniAuth){setTimeout(enter,0);return false;}
+  const ok=await window.TaskMtaaniAuth.tryExisting();
+  if(!ok){exit();window.TaskMtaaniAuth.show();return false;}
+  enterAuthenticated();
+  return true;
+}
+function enterAuthenticated(){document.body.classList.add('admin-mode');panel('overview');const c=supabase();connection(!!(c.url&&c.key&&!c.url.startsWith('YOUR_')&&!c.key.startsWith('YOUR_')),c.url&&c.key&&!c.url.startsWith('YOUR_')&&!c.key.startsWith('YOUR_')?'Supabase connected.':'Supabase connection is not configured in this file.')}
 function exit(){document.body.classList.remove('admin-mode');history.replaceState(null,'',location.pathname+location.search)}
 function adminSignOut(){
   localStorage.removeItem('taskmtaani_access_token');
@@ -945,9 +952,15 @@ window.TaskMtaaniProviderApplications={load:loadApplications};
     return data;
   }
   async function profile(token){
-    const c=cfg(); const r=await fetch(c.url+'/rest/v1/profiles?select=id,full_name,role&limit=1',{headers:{apikey:c.key,Authorization:'Bearer '+token}});
-    const data=await r.json(); if(!r.ok) throw Error(data.message||'Could not verify administrator profile.');
-    if(!data[0]||data[0].role!=='admin') throw Error('This account is not assigned the admin role.'); return data[0];
+    const c=cfg();
+    const u=await fetch(c.url+'/auth/v1/user',{headers:{apikey:c.key,Authorization:'Bearer '+token}});
+    const user=await u.json();
+    if(!u.ok||!user.id) throw Error('Your admin session has expired. Please sign in again.');
+    const r=await fetch(c.url+'/rest/v1/profiles?select=id,full_name,role&id=eq.'+encodeURIComponent(user.id)+'&limit=1',{headers:{apikey:c.key,Authorization:'Bearer '+token}});
+    const data=await r.json();
+    if(!r.ok) throw Error(data.message||'Could not verify administrator profile.');
+    if(!data[0]||data[0].role!=='admin') throw Error('This account is not assigned the admin role.');
+    return data[0];
   }
   async function tryExisting(){const token=localStorage.getItem('taskmtaani_access_token');if(!token)return false;try{await profile(token);window.TASKMTAANI_ADMIN_TOKEN=token;return true}catch(e){localStorage.removeItem('taskmtaani_access_token');localStorage.removeItem('taskmtaani_refresh_token');return false}}
   form?.addEventListener('submit',async e=>{e.preventDefault();err.classList.add('hidden');try{const d=await signIn(document.getElementById('admin-login-email').value.trim(),document.getElementById('admin-login-password').value);await profile(d.access_token);window.TASKMTAANI_ADMIN_TOKEN=d.access_token;hide();window.TaskMtaaniAdmin?.enterAuthenticated?.()}catch(e){err.textContent=e.message;err.classList.remove('hidden')}});
