@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        /* Mobile navigation and booking usability */
+        #booking-form { scroll-margin-top: 90px; }
+        @media (max-width: 767px) {
+            #mobile-menu a { min-height: 44px; display: flex; align-items: center; }
+            #bookingForm button[type="submit"] { min-height: 48px; }
+        }
+    
+/* Item 13 Admin Dashboard */
+#admin-dashboard{display:none}
+body.admin-mode > *:not(#admin-dashboard){display:none!important}
+body.admin-mode #admin-dashboard{display:block}
+.admin-shell{min-height:100vh;background:#f8fafc}.admin-sidebar{background:#0f172a;color:#cbd5e1}.admin-nav-btn{width:100%;text-align:left;padding:.75rem 1rem;border-radius:.75rem;transition:.2s}.admin-nav-btn:hover,.admin-nav-btn.active{background:#064e3b;color:white}.admin-panel{display:none}.admin-panel.active{display:block}.admin-stat{background:white;border:1px solid #e5e7eb;border-radius:1rem;padding:1.25rem;box-shadow:0 1px 2px rgba(0,0,0,.04)}.admin-table-wrap{overflow-x:auto}.admin-table{width:100%;border-collapse:collapse}.admin-table th,.admin-table td{padding:.8rem;border-bottom:1px solid #e5e7eb;text-align:left;white-space:nowrap}.admin-table th{color:#475569;font-size:.8rem;text-transform:uppercase;letter-spacing:.04em}.admin-input{width:100%;border:1px solid #cbd5e1;border-radius:.65rem;padding:.7rem .8rem;outline:none}.admin-input:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.12)}.admin-badge{display:inline-flex;align-items:center;padding:.25rem .55rem;border-radius:999px;font-size:.75rem;font-weight:600}.admin-badge-green{background:#dcfce7;color:#166534}.admin-badge-yellow{background:#fef3c7;color:#92400e}.admin-badge-gray{background:#e2e8f0;color:#475569}@media(max-width:767px){.admin-table th,.admin-table td{white-space:normal}}
+
+/* Item 15 Customer Accounts */
+.account-panel{display:none}.account-panel.active{display:block}.account-chip{min-height:44px}.account-modal{backdrop-filter:blur(3px)}
+</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskMtaani | Helper Dashboard</title>
+    <meta name="description" content="Find and book helpers in Kenya for driving, cooking, gardening, plumbing, cleaning, laundry and more with TaskMtaani.">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="TaskMtaani">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="canonical" href="/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="TaskMtaani | Find Helpers in Kenya">
+    <meta property="og:description" content="Find and book helpers in Kenya for driving, cooking, gardening, plumbing, cleaning, laundry and more.">
+    <meta property="og:site_name" content="TaskMtaani">
+    <meta property="og:image" content="/og-image.jpg">
+    <meta property="og:image:alt" content="TaskMtaani — Find and book helpers in Kenya">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="TaskMtaani | Find Helpers in Kenya">
+    <meta name="twitter:description" content="Find and book helpers in Kenya for everyday services.">
+    <meta name="twitter:image" content="/og-image.jpg">
+    <link rel="icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "TaskMtaani",
+      "description": "A Kenyan service marketplace for finding and booking helpers.",
+      "telephone": "+254719535117",
+      "email": "taskmtaani@gmail.com",
+      "areaServed": "Kenya",
+      "serviceType": ["Drivers", "Cooks", "Gardeners", "Plumbers", "Cleaners", "Laundry"]
+    }
+    </script>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .whatsapp-green {
+            background-color: #25D366;
+        }
+        .whatsapp-green:hover {
+            background-color: #1ebe5d;
+        }
+        .hero-bg {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), var(--taskmtaani-hero-image, url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'));
+            background-size: cover;
+            background-position: center;
+        }
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .service-card {
+            transition: all 0.3s ease;
+        }
+
+        .service-select:active {
+            transform: translateY(-2px);
+        }
+    </style>
+<!-- TaskMtaani backend integration scaffold
+     Supabase URL/key should be supplied through deployment environment variables.
+     Do not place service-role keys or private secrets in this HTML file. -->
+<script>
+  window.TASKMTAANI_CONFIG = Object.freeze({
+    backend: "supabase",
+    serviceCatalog: {
+      source: "supabase",
+      table: "services",
+      allowCreation: true,
+      fields: ["id", "name", "description", "icon", "active", "created_at", "updated_at"]
+    },
+    heroBackground: {
+      source: "supabase",
+      table: "site_settings",
+      key: "hero_background_url",
+      fallback: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+    },
+    tables: {
+      customers: "customers",
+      providers: "providers",
+      providerServices: "provider_services",
+      bookings: "bookings",
+      services: "services",
+      testimonials: "testimonials",
+      settings: "site_settings",
+      siteVersions: "site_versions",
+      servicePricing: "service_pricing"
+    },
+    auth: {
+      enabled: true,
+      roles: ["customer", "provider", "admin"]
+    },
+    booking: {
+      statusFlow: ["pending", "confirmed", "assigned", "completed", "cancelled"]
+    },
+    helperDatabase: {
+      providerTable: "providers",
+      providerFields: [
+        "id",
+        "full_name",
+        "phone",
+        "whatsapp",
+        "profession",
+        "experience_years",
+        "service_area",
+        "availability",
+        "verification_status",
+        "reference_status",
+        "profile_photo_url",
+        "active",
+        "created_at",
+        "updated_at"
+      ],
+      serviceRateTable: "provider_services",
+      serviceRateFields: [
+        "id",
+        "provider_id",
+        "service_id",
+        "rate_type",
+        "rate_amount",
+        "currency",
+        "notes",
+        "active",
+        "created_at",
+        "updated_at"
+      ],
+      rateTypes: ["per_day", "per_service"],
+      currency: "KES"
+    }
+  });
+</script>
+
+<!-- Supabase public client configuration. Replace these two placeholders with your Supabase Project URL and anon/publishable key. Never put a service-role key here. -->
+<script>
+  window.TASKMTAANI_SUPABASE_URL = "https://ykrztxxvdcehcotugenm.supabase.co";
+  window.TASKMTAANI_SUPABASE_ANON_KEY = "sb_publishable_QW9AyGSvJHfXtB6564EMbw_4qVAp_qX";
+</script>
+
+<style id="taskmtaani-dedicated-page-style">
+/* Item 27: dedicated helper page */
+body.taskmtaani-helper-page > *:not(header):not(#provider-area):not(#customer-auth-modal):not(#password-reset-modal):not(footer){display:none!important}
+body.taskmtaani-helper-page #account-area,body.taskmtaani-helper-page #notifications-area,body.taskmtaani-helper-page #mpesa-payment{display:none!important}
+body.taskmtaani-helper-page #provider-area{display:block!important}
+body.taskmtaani-helper-page footer{display:block!important}
+</style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <!-- Logo -->
+                <a href="index.html" class="flex items-center space-x-2">
+                    <i class="fa-solid fa-hand-holding-heart text-3xl text-emerald-600"></i>
+                    <span class="text-2xl font-bold text-gray-900">Task<span class="text-emerald-600">Mtaani</span></span>
+                </a>
+                <!-- Navigation -->
+                <nav class="hidden md:flex space-x-8 items-center">
+                    <a href="#services" class="text-gray-600 hover:text-emerald-600 font-medium">Services</a>
+                    <a href="#how-it-works" class="text-gray-600 hover:text-emerald-600 font-medium">How It Works</a>
+                    <a href="#why-us" class="text-gray-600 hover:text-emerald-600 font-medium">Why Us</a>
+                    <a href="#booking-form" class="whatsapp-green text-white px-5 py-2 rounded-full font-semibold text-sm shadow-md transition duration-300">
+                        <i class="fa-brands fa-whatsapp mr-1"></i> Book Now
+                    </a>
+                    <button id="account-nav-btn" type="button" class="account-chip px-5 py-2 rounded-full border border-emerald-200 text-emerald-700 font-semibold text-sm hover:bg-emerald-50">
+                        <i class="fa-solid fa-right-to-bracket mr-1"></i> <span id="account-nav-label">Login</span>
+                    </button>
+                </nav>
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu" class="md:hidden text-gray-600 text-2xl p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <i id="mobile-menu-icon" class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="hidden md:hidden pb-4" aria-hidden="true">
+                <a href="#services" class="block py-2 text-gray-600 hover:text-emerald-600">Services</a>
+                <a href="#how-it-works" class="block py-2 text-gray-600 hover:text-emerald-600">How It Works</a>
+                <a href="#why-us" class="block py-2 text-gray-600 hover:text-emerald-600">Why Us</a>
+                <a href="#booking-form" class="block py-2 whatsapp-green text-white text-center rounded-full font-semibold mt-2">Book via WhatsApp</a>
+                <button id="account-mobile-btn" type="button" class="w-full text-left py-3 text-emerald-700 font-semibold">
+                    <i class="fa-solid fa-right-to-bracket mr-2"></i><span id="account-mobile-label">Login</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="hero-section" class="hero-bg text-white">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 text-center">
+            <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-4">
+                Your Trusted Partner for <br class="hidden md:block"> Everyday Tasks in Kenya
+            </h1>
+            <p class="text-lg md:text-xl text-gray-200 max-w-3xl mx-auto mb-8">
+                Hire vetted drivers, cooks, gardeners, plumbers, cleaners, and dobis. Tell us what you need, and we'll connect you on WhatsApp in minutes.
+            </p>
+            <a href="#booking-form" class="whatsapp-green text-white text-lg font-bold py-4 px-10 rounded-full shadow-lg hover:shadow-xl transition duration-300 inline-block">
+                <i class="fa-solid fa-magnifying-glass mr-2"></i> Find Your Helper Now
+            </a>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-16 md:py-24 bg-white">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">What Can We Help You With?</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">From household chores to professional repairs, TaskMtaani has you covered.</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Service Cards -->
+                <button type="button" class="service-card service-select w-full text-left bg-gray-50 p-8 rounded-2xl border border-gray-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500" data-service="Driver">
+                    <div class="bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-car text-2xl text-emerald-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Drivers</h3>
+                    <p class="text-gray-600">For airport pickups, daily commutes, or running personal errands safely and on time.</p>
+                </button>
+                <button type="button" class="service-card service-select w-full text-left bg-gray-50 p-8 rounded-2xl border border-gray-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500" data-service="Cook">
+                    <div class="bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-utensils text-2xl text-emerald-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Cooks</h3>
+                    <p class="text-gray-600">For daily meal prep, special events, or a private dinner party in your home.</p>
+                </button>
+                <button type="button" class="service-card service-select w-full text-left bg-gray-50 p-8 rounded-2xl border border-gray-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500" data-service="Gardener">
+                    <div class="bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-leaf text-2xl text-emerald-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Gardeners</h3>
+                    <p class="text-gray-600">For lawn mowing, landscaping, planting, or general garden maintenance.</p>
+                </button>
+                <button type="button" class="service-card service-select w-full text-left bg-gray-50 p-8 rounded-2xl border border-gray-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500" data-service="Plumber">
+                    <div class="bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-wrench text-2xl text-emerald-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Plumbers</h3>
+                    <p class="text-gray-600">For leaky taps, pipe repairs, drainage issues, or new installations.</p>
+                </button>
+                <button type="button" class="service-card service-select w-full text-left bg-gray-50 p-8 rounded-2xl border border-gray-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500" data-service="Cleaner">
+                    <div class="bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-broom text-2xl text-emerald-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Cleaners</h3>
+                    <p class="text-gray-600">For deep cleaning, move-in/move-out cleaning, or regular housekeeping services.</p>
+                </button>
+                <button type="button" class="service-card service-select w-full text-left bg-gray-50 p-8 rounded-2xl border border-gray-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500" data-service="Dobi">
+                    <div class="bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-shirt text-2xl text-emerald-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Dobis</h3>
+                    <p class="text-gray-600">For laundry, ironing, and dry cleaning pickups and deliveries at your convenience.</p>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="py-16 md:py-24 bg-gray-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Get Help in 3 Simple Steps</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">We've made hiring help as easy as sending a message.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div class="p-6">
+                    <div class="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md border-4 border-emerald-200">
+                        <span class="text-2xl font-bold text-emerald-600">1</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Tell Us What You Need</h3>
+                    <p class="text-gray-600">Use our simple form to select the service, your preferred date, and the gender of the professional you'd like.</p>
+                </div>
+                <div class="p-6">
+                    <div class="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md border-4 border-emerald-200">
+                        <span class="text-2xl font-bold text-emerald-600">2</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">We Connect on WhatsApp</h3>
+                    <p class="text-gray-600">Click 'Book via WhatsApp' and your request is pre-filled. We'll confirm availability and details with you directly.</p>
+                </div>
+                <div class="p-6">
+                    <div class="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md border-4 border-emerald-200">
+                        <span class="text-2xl font-bold text-emerald-600">3</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Your Helper Arrives</h3>
+                    <p class="text-gray-600">We match you with a trusted, vetted professional who arrives on time and ready to work.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Form Section -->
+    <section id="booking-form" class="py-16 md:py-24 bg-emerald-700">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-2xl p-8 md:p-12">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Find Your Perfect Helper</h2>
+                    <p class="text-gray-600">Fill in the details below to start your booking on WhatsApp.</p>
+                </div>
+                
+                <form id="bookingForm" class="space-y-6">
+                    <!-- Service Selection -->
+                    <div>
+                        <label for="service" class="block text-sm font-semibold text-gray-700 mb-2">Service Needed <span class="text-red-500">*</span></label>
+                        <select id="service" name="service" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition duration-200 bg-gray-50">
+                            <option value="" disabled selected>Select a service...</option>
+                            <option value="Driver">Driver</option>
+                            <option value="Cook">Cook</option>
+                            <option value="Gardener">Gardener</option>
+                            <option value="Plumber">Plumber</option>
+                            <option value="Cleaner">Cleaner</option>
+                            <option value="Dobi">Dobi (Laundry)</option>
+                        </select>
+                    </div>
+
+                    <!-- Job Type & Duration -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="jobType" class="block text-sm font-semibold text-gray-700 mb-2">Type of Job</label>
+                            <select id="jobType" name="jobType" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition duration-200 bg-gray-50">
+                                <option value="Standard" selected>Standard</option>
+                                <option value="Emergency / Urgent">Emergency / Urgent</option>
+                                <option value="Weekend / Holiday">Weekend / Holiday</option>
+                                <option value="Event / Special">Event / Special</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="duration" class="block text-sm font-semibold text-gray-700 mb-2">Duration (days)</label>
+                            <input type="number" id="duration" name="duration" min="1" max="365" value="1" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition duration-200 bg-gray-50">
+                        </div>
+                    </div>
+
+                    <!-- Preferred Date & Time -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="date" class="block text-sm font-semibold text-gray-700 mb-2">Preferred Date <span class="text-red-500">*</span></label>
+                            <input type="date" id="date" name="date" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition duration-200 bg-gray-50">
+                        </div>
+                        <div>
+                            <label for="time" class="block text-sm font-semibold text-gray-700 mb-2">Preferred Time</label>
+                            <input type="time" id="time" name="time" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition duration-200 bg-gray-50">
+                        </div>
+                    </div>
+
+                    <!-- Preferred Gender -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Preferred Gender of Helper <span class="text-red-500">*</span></label>
+                        <div class="flex flex-wrap gap-4">
+                            <label class="flex items-center space-x-2 cursor-pointer bg-gray-50 px-4 py-3 rounded-lg border border-gray-300 hover:bg-gray-100 transition duration-200">
+                                <input type="radio" name="gender" value="Male" required class="text-emerald-600 focus:ring-emerald-500">
+                                <span>Male</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer bg-gray-50 px-4 py-3 rounded-lg border border-gray-300 hover:bg-gray-100 transition duration-200">
+                                <input type="radio" name="gender" value="Female" required class="text-emerald-600 focus:ring-emerald-500">
+                                <span>Female</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer bg-gray-50 px-4 py-3 rounded-lg border border-gray-300 hover:bg-gray-100 transition duration-200">
+                                <input type="radio" name="gender" value="No Preference" required class="text-emerald-600 focus:ring-emerald-500">
+                                <span>No Preference</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Location -->
+                    <div>
+                        <label for="location" class="block text-sm font-semibold text-gray-700 mb-2">Your Location (Area, City) <span class="text-red-500">*</span></label>
+                        <input type="text" id="location" name="location" placeholder="e.g., Kilimani, Nairobi" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition duration-200 bg-gray-50">
+                    </div>
+
+                    <!-- Your Name (Optional) -->
+                    <div>
+                        <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">Your Name (Optional)</label>
+                        <input type="text" id="name" name="name" placeholder="e.g., Jane Doe" autocomplete="name" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition duration-200 bg-gray-50">
+                    </div>
+
+                    <!-- Phone (Optional) -->
+                    <div>
+                        <label for="customerPhone" class="block text-sm font-semibold text-gray-700 mb-2">Your Phone Number (Optional)</label>
+                        <input type="tel" id="customerPhone" name="customerPhone" placeholder="e.g., 0712 345 678" autocomplete="tel" inputmode="tel" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition duration-200 bg-gray-50">
+                    </div>
+
+                    <!-- Task Details -->
+                    <div>
+                        <label for="details" class="block text-sm font-semibold text-gray-700 mb-2">What do you need help with? <span class="text-red-500">*</span></label>
+                        <textarea id="details" name="details" rows="4" required maxlength="500" placeholder="Briefly describe the task, property, or work required..." class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition duration-200 bg-gray-50 resize-y"></textarea>
+                        <p class="text-xs text-gray-500 mt-1">Please avoid sharing passwords, payment details, or other sensitive information.</p>
+                    </div>
+
+                    <!-- Automatic Quote -->
+                    <div id="quote-panel" class="rounded-xl border border-emerald-200 bg-emerald-50 p-5 hidden">
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <div><p class="text-xs font-bold uppercase tracking-wide text-emerald-700">Estimated quotation</p><p id="quote-description" class="text-sm text-gray-600">Select a service to calculate the current configured price.</p></div>
+                            <div id="quote-amount" class="text-2xl font-extrabold text-emerald-700">KES —</div>
+                        </div>
+                        <p id="quote-status" class="text-xs text-gray-500 mt-2">The final amount is confirmed by TaskMtaani before payment.</p>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="pt-4">
+                        <button type="submit" class="w-full whatsapp-green text-white text-lg font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300 flex items-center justify-center">
+                            <i class="fa-brands fa-whatsapp text-2xl mr-3"></i> Book via WhatsApp
+                        </button>
+                        <p class="text-center text-xs text-gray-500 mt-3">You will be redirected to WhatsApp to confirm your booking.</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Us Section -->
+    <section id="why-us" class="py-16 md:py-24 bg-white">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Why Choose TaskMtaani?</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">We are committed to providing a service you can trust and rely on.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="text-center p-6 bg-gray-50 rounded-2xl">
+                    <div class="text-emerald-600 text-4xl mb-4"><i class="fa-solid fa-shield-halved"></i></div>
+                    <h3 class="text-lg font-bold mb-2">Verified Helper Profiles</h3>
+                    <p class="text-gray-600 text-sm">Helper profiles can record identity, profession, experience, references, availability, and verification status before matching.</p>
+                </div>
+                <div class="text-center p-6 bg-gray-50 rounded-2xl">
+                    <div class="text-emerald-600 text-4xl mb-4"><i class="fa-solid fa-comments"></i></div>
+                    <h3 class="text-lg font-bold mb-2">Convenient Booking</h3>
+                    <p class="text-gray-600 text-sm">No more endless phone calls. Your entire booking is handled through a simple WhatsApp chat.</p>
+                </div>
+                <div class="text-center p-6 bg-gray-50 rounded-2xl">
+                    <div class="text-emerald-600 text-4xl mb-4"><i class="fa-solid fa-sliders"></i></div>
+                    <h3 class="text-lg font-bold mb-2">Flexible Choices</h3>
+                    <p class="text-gray-600 text-sm">Choose the date and the gender of your helper for maximum comfort and peace of mind.</p>
+                </div>
+                <div class="text-center p-6 bg-gray-50 rounded-2xl">
+                    <div class="text-emerald-600 text-4xl mb-4"><i class="fa-solid fa-tags"></i></div>
+                    <h3 class="text-lg font-bold mb-2">Fair Pricing</h3>
+                    <p class="text-gray-600 text-sm">Transparent rates with no hidden fees. You'll agree on the price before the job begins.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-16 md:py-24 bg-gray-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">What Our Customers Say</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">Reviews from real TaskMtaani customers will appear here after completed bookings.</p>
+            </div>
+            <div id="testimonials-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="flex items-center gap-2 mb-5 text-gray-400">
+                        <i class="fa-regular fa-star"></i>
+                        <span class="text-sm font-medium">Customer review</span>
+                    </div>
+                    <p class="text-gray-500 italic mb-6">Your genuine customer review will appear here after it has been submitted and approved.</p>
+                    <div class="font-bold text-gray-700">Customer name</div>
+                    <div class="text-sm text-gray-500">Location</div>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="flex items-center gap-2 mb-5 text-gray-400">
+                        <i class="fa-regular fa-star"></i>
+                        <span class="text-sm font-medium">Customer review</span>
+                    </div>
+                    <p class="text-gray-500 italic mb-6">Your genuine customer review will appear here after it has been submitted and approved.</p>
+                    <div class="font-bold text-gray-700">Customer name</div>
+                    <div class="text-sm text-gray-500">Location</div>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="flex items-center gap-2 mb-5 text-gray-400">
+                        <i class="fa-regular fa-star"></i>
+                        <span class="text-sm font-medium">Customer review</span>
+                    </div>
+                    <p class="text-gray-500 italic mb-6">Your genuine customer review will appear here after it has been submitted and approved.</p>
+                    <div class="font-bold text-gray-700">Customer name</div>
+                    <div class="text-sm text-gray-500">Location</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<!-- Item 15 Customer Account Area -->
+<section id="provider-area" class="account-panel active py-16 md:py-24 bg-sky-50">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+      <div><p class="text-sm text-sky-700 font-semibold">HELPER PORTAL</p><h2 class="text-3xl font-bold text-gray-900">Provider Dashboard</h2><p id="provider-welcome" class="text-gray-500 mt-1">Apply to join TaskMtaani or manage your approved helper profile.</p></div>
+      <button id="provider-signout" type="button" class="hidden px-4 py-2 rounded-lg bg-white border border-gray-200 hover:bg-gray-100 font-semibold text-sm">Sign out</button>
+    </div>
+    <div id="provider-guest" class="bg-white rounded-2xl border border-gray-200 p-6 text-center">
+      <i class="fa-solid fa-helmet-safety text-4xl text-sky-600 mb-4"></i><h3 class="text-xl font-bold mb-2">Become a TaskMtaani Helper</h3>
+      <p class="text-gray-600 max-w-2xl mx-auto mb-6">Sign in with your customer account, submit your helper application, and wait for admin review. Your provider role and verification status are controlled by TaskMtaani administrators.</p>
+      <button id="provider-apply-btn" type="button" class="px-6 py-3 rounded-full bg-sky-600 text-white font-semibold">Sign in / Apply</button>
+    </div>
+    <div id="provider-application-card" class="hidden bg-white rounded-2xl border border-gray-200 p-6 mb-6">
+      <div class="flex items-center justify-between gap-3 mb-4"><div><h3 class="text-xl font-bold">Helper Application</h3><p class="text-sm text-gray-500">Submit your details for admin review.</p></div><span id="provider-application-status" class="admin-badge">Not submitted</span></div>
+      <form id="provider-application-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input id="provider-app-name" required placeholder="Full name" class="admin-input"><input id="provider-app-phone" required placeholder="Phone / WhatsApp" class="admin-input">
+        <input id="provider-app-profession" required placeholder="Profession (e.g. Driver, Cook)" class="admin-input"><input id="provider-app-experience" type="number" min="0" step="0.5" placeholder="Experience in years" class="admin-input">
+        <input id="provider-app-area" required placeholder="Service area" class="admin-input"><input id="provider-app-availability" placeholder="Availability" class="admin-input">
+        <textarea id="provider-app-bio" rows="3" placeholder="Short professional bio" class="admin-input md:col-span-2"></textarea>
+        <button class="md:col-span-2 py-3 rounded-lg bg-sky-600 text-white font-semibold" type="submit">Submit Application</button>
+      </form><p id="provider-application-message" class="text-sm mt-3"></p>
+    </div>
+    <div id="provider-dashboard" class="hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-200 p-6"><div class="flex items-center justify-between mb-4"><h3 class="text-xl font-bold">My Helper Profile</h3><span id="provider-verification-badge" class="admin-badge">—</span></div>
+          <form id="provider-profile-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input id="provider-profile-name" required placeholder="Full name" class="admin-input"><input id="provider-profile-phone" placeholder="Phone" class="admin-input">
+            <input id="provider-profile-whatsapp" placeholder="WhatsApp" class="admin-input"><input id="provider-profile-profession" required placeholder="Profession" class="admin-input">
+            <input id="provider-profile-experience" type="number" min="0" step="0.5" placeholder="Experience years" class="admin-input"><input id="provider-profile-area" placeholder="Service area" class="admin-input">
+            <input id="provider-profile-availability" placeholder="Availability" class="admin-input"><input id="provider-profile-photo" placeholder="Profile photo URL" class="admin-input">
+            <textarea id="provider-profile-bio" rows="3" placeholder="Professional bio" class="admin-input md:col-span-2"></textarea>
+            <button class="md:col-span-2 py-3 rounded-lg bg-sky-600 text-white font-semibold" type="submit">Save Profile</button>
+          </form><p id="provider-profile-message" class="text-sm mt-3"></p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-200 p-6"><h3 class="text-xl font-bold mb-2">Verification</h3><p class="text-sm text-gray-600 mb-4">Verification and active status can only be changed by TaskMtaani administrators.</p><div class="space-y-3 text-sm"><div class="flex justify-between"><span>Verification</span><strong id="provider-verification-text">—</strong></div><div class="flex justify-between"><span>References</span><strong id="provider-reference-text">—</strong></div><div class="flex justify-between"><span>Active</span><strong id="provider-active-text">—</strong></div></div></div>
+      </div>
+      <div class="bg-white rounded-2xl border border-gray-200 p-6 mb-6"><div class="flex items-center justify-between mb-4"><div><h3 class="text-xl font-bold">My Services & Rates</h3><p class="text-sm text-gray-500">Manage the services and rates you offer.</p></div><button id="provider-refresh-services" type="button" class="text-sky-700 font-semibold text-sm">Refresh</button></div><form id="provider-rate-form" class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-5"><select id="provider-rate-service" required class="admin-input"><option value="">Select service</option></select><select id="provider-rate-type" class="admin-input"><option value="per_day">Per day</option><option value="per_service">Per service</option></select><input id="provider-rate-amount" required type="number" min="0" step="0.01" placeholder="Rate (KES)" class="admin-input"><button class="py-3 rounded-lg bg-gray-900 text-white font-semibold" type="submit">Add / Update</button></form><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Service</th><th>Rate type</th><th>Amount</th><th>Active</th><th>Action</th></tr></thead><tbody id="provider-rates-table"><tr><td colspan="5">No services loaded.</td></tr></tbody></table></div></div>
+      <div class="bg-white rounded-2xl border border-gray-200 p-6"><div class="flex items-center justify-between mb-4"><div><h3 class="text-xl font-bold">Assigned Jobs</h3><p class="text-sm text-gray-500">Only jobs assigned to your provider profile are shown.</p></div><button id="provider-refresh-bookings" type="button" class="text-sky-700 font-semibold text-sm">Refresh</button></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Service</th><th>Date</th><th>Time</th><th>Location</th><th>Customer</th><th>Status</th><th>Update</th></tr></thead><tbody id="provider-bookings-table"><tr><td colspan="7">No assigned jobs.</td></tr></tbody></table></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="account-area" class="account-panel py-16 md:py-24 bg-slate-50">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
+    <div class="bg-white rounded-2xl shadow-sm border p-6 md:p-10">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div><p class="text-sm text-emerald-600 font-semibold">MY ACCOUNT</p><h2 class="text-3xl font-bold text-gray-900">Customer Dashboard</h2><p id="account-welcome" class="text-gray-500 mt-1">Sign in to manage your bookings.</p></div>
+        <button id="account-signout" type="button" class="hidden px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 font-semibold text-sm">Sign out</button>
+      </div>
+      <div id="account-profile-card" class="hidden mb-8 p-5 rounded-xl bg-emerald-50 border border-emerald-100">
+        <h3 class="font-bold text-gray-900 mb-4">My Profile</h3>
+        <form id="customer-profile-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label class="text-sm font-medium">Full name<input id="customer-profile-name" class="admin-input mt-1" required></label>
+          <label class="text-sm font-medium">Phone<input id="customer-profile-phone" class="admin-input mt-1"></label>
+          <label class="text-sm font-medium">WhatsApp<input id="customer-profile-whatsapp" class="admin-input mt-1"></label>
+          <div class="md:col-span-2"><button class="px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold" type="submit">Save Profile</button></div>
+        </form>
+      </div>
+      <div id="account-bookings-card" class="hidden">
+        <div class="flex items-center justify-between mb-4"><h3 class="text-xl font-bold">My Bookings</h3><button id="account-refresh-bookings" type="button" class="text-emerald-700 font-semibold text-sm">Refresh</button></div>
+        <div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Service</th><th>Date</th><th>Location</th><th>Status</th><th>Created</th></tr></thead><tbody id="customer-bookings-table"><tr><td colspan="5">Sign in to view your bookings.</td></tr></tbody></table></div>
+      </div>
+      <div id="account-guest" class="text-center py-8">
+        <div class="text-emerald-600 text-4xl mb-3"><i class="fa-solid fa-user-circle"></i></div>
+        <h3 class="text-xl font-bold mb-2">Create an account to track your bookings</h3>
+        <p class="text-gray-500 mb-5">Your account lets you view your booking history and keep your contact details ready for future requests.</p>
+        <button id="account-guest-btn" type="button" class="px-6 py-3 rounded-full bg-emerald-600 text-white font-semibold">Sign in / Register</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-12">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="col-span-1 md:col-span-2">
+                    <a href="#" class="flex items-center space-x-2 mb-4">
+                        <i class="fa-solid fa-hand-holding-heart text-3xl text-emerald-500"></i>
+                        <span class="text-2xl font-bold text-white">Task<span class="text-emerald-500">Mtaani</span></span>
+                    </a>
+                    <p class="max-w-md">Your trusted partner for everyday tasks in Kenya. We connect you with vetted professionals for a hassle-free life.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#services" class="hover:text-emerald-500 transition">Services</a></li>
+                        <li><a href="#how-it-works" class="hover:text-emerald-500 transition">How It Works</a></li>
+                        <li><a href="#why-us" class="hover:text-emerald-500 transition">Why Us</a></li>
+                        <li><a href="#booking-form" class="hover:text-emerald-500 transition">Book Now</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Contact Us</h4>
+                    <ul class="space-y-2">
+                        <li><i class="fa-solid fa-envelope mr-2"></i> taskmtaani@gmail.com</li>
+                        <li><i class="fa-brands fa-whatsapp mr-2"></i> +254 719 535 117</li>
+                    </ul>
+                    <div class="flex space-x-4 mt-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fa-brands fa-x-twitter"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center text-sm">
+                <p>&copy; 2026 TaskMtaani. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript for Form Submission and Mobile Menu -->
+    <!-- Backend-ready booking hook: connect form submission to Supabase bookings table. -->
+<script>
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+
+        function closeMobileMenu() {
+            mobileMenu.classList.add('hidden');
+            mobileMenu.setAttribute('aria-hidden', 'true');
+            mobileMenuBtn.setAttribute('aria-expanded', 'false');
+            mobileMenuBtn.setAttribute('aria-label', 'Open menu');
+            mobileMenuIcon.classList.remove('fa-xmark');
+            mobileMenuIcon.classList.add('fa-bars');
+        }
+
+        function toggleMobileMenu() {
+            const isOpen = !mobileMenu.classList.contains('hidden');
+            if (isOpen) {
+                closeMobileMenu();
+            } else {
+                mobileMenu.classList.remove('hidden');
+                mobileMenu.setAttribute('aria-hidden', 'false');
+                mobileMenuBtn.setAttribute('aria-expanded', 'true');
+                mobileMenuBtn.setAttribute('aria-label', 'Close menu');
+                mobileMenuIcon.classList.remove('fa-bars');
+                mobileMenuIcon.classList.add('fa-xmark');
+            }
+        }
+
+        mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+
+        // Close mobile menu when a link is clicked
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', closeMobileMenu);
+        });
+
+        // Close with Escape for easier mobile and keyboard navigation
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') closeMobileMenu();
+        });
+
+        // Close when tapping outside the mobile menu
+        document.addEventListener('click', (event) => {
+            if (window.innerWidth < 768 && !mobileMenu.classList.contains('hidden') &&
+                !mobileMenu.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                closeMobileMenu();
+            }
+        });
+
+        // Keep menu state correct when returning to desktop layout
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768) closeMobileMenu();
+        });
+
+        // Service card selection
+        document.querySelectorAll('.service-select').forEach(card => {
+            card.addEventListener('click', () => {
+                const selectedService = card.dataset.service;
+                const serviceSelect = document.getElementById('service');
+                serviceSelect.value = selectedService;
+
+                document.getElementById('booking-form').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+
+                setTimeout(() => {
+                    if (window.innerWidth >= 768) serviceSelect.focus();
+                }, 500);
+            });
+        });
+
+        // Hero background: load the active image URL from the Supabase site_settings table.
+        // If Supabase configuration is not supplied yet, the current built-in image remains the fallback.
+        async function loadHeroBackground() {
+            const hero = document.getElementById('hero-section');
+            const fallback = window.TASKMTAANI_CONFIG.heroBackground.fallback;
+            if (!hero) return;
+
+            try {
+                const supabaseUrl = window.TASKMTAANI_SUPABASE_URL;
+                const supabaseAnonKey = window.TASKMTAANI_SUPABASE_ANON_KEY;
+                if (!supabaseUrl || !supabaseAnonKey) return;
+
+                const endpoint = `${supabaseUrl.replace(/\/$/, '')}/rest/v1/site_settings?key=eq.hero_background_url&select=value&limit=1`;
+                const response = await fetch(endpoint, {
+                    headers: {
+                        apikey: supabaseAnonKey,
+                        Authorization: `Bearer ${supabaseAnonKey}`
+                    }
+                });
+
+                if (!response.ok) return;
+                const rows = await response.json();
+                const imageUrl = rows?.[0]?.value;
+                if (typeof imageUrl === 'string' && imageUrl.trim()) {
+                    hero.style.setProperty('--taskmtaani-hero-image', `url("${imageUrl.trim().replace(/"/g, '\\"')}")`);
+                } else {
+                    hero.style.setProperty('--taskmtaani-hero-image', `url("${fallback}")`);
+                }
+            } catch (error) {
+                // Keep the fallback image if the backend is unavailable.
+                console.warn('TaskMtaani hero background could not be loaded from the backend.', error);
+            }
+        }
+        loadHeroBackground();
+
+        // Booking + Item 22 automatic quotation. Pricing is read from Supabase; no prices are hard-coded here.
+        const bookingForm = document.getElementById('bookingForm');
+        const quotePanel = document.getElementById('quote-panel');
+        const quoteAmount = document.getElementById('quote-amount');
+        const quoteDescription = document.getElementById('quote-description');
+        const quoteStatus = document.getElementById('quote-status');
+        let currentQuote = null;
+
+        function normRule(v){return String(v||'').trim().toLowerCase();}
+        function ruleMatches(rule, value){
+            const r=normRule(rule); const v=normRule(value);
+            if(!r || r==='*' || r==='all' || r==='any') return true;
+            return r.split(',').map(x=>x.trim()).filter(Boolean).some(part=>v===part || v.includes(part) || part.includes(v));
+        }
+        function choosePricingRule(rows, duration, location, jobType){
+            const matches=rows.filter(x=>{
+                const min=Math.max(1,Number(x.minimum_days||1));
+                const max=x.maximum_days==null||x.maximum_days===''?null:Number(x.maximum_days);
+                return duration>=min && (!max || duration<=max) && ruleMatches(x.location_rule,location) && ruleMatches(x.job_type_rule,jobType);
+            });
+            matches.sort((a,b)=>{
+                const pa=Number(a.priority||0), pb=Number(b.priority||0); if(pb!==pa) return pb-pa;
+                const sa=(normRule(a.location_rule)==='*'||normRule(a.location_rule)==='all')?0:1;
+                const sb=(normRule(b.location_rule)==='*'||normRule(b.location_rule)==='all')?0:1; if(sb!==sa) return sb-sa;
+                const ja=(normRule(a.job_type_rule)==='*'||normRule(a.job_type_rule)==='all')?0:1;
+                const jb=(normRule(b.job_type_rule)==='*'||normRule(b.job_type_rule)==='all')?0:1; if(jb!==ja) return jb-ja;
+                const wa=(a.maximum_days==null?9999:Number(a.maximum_days))-Number(a.minimum_days||1);
+                const wb=(b.maximum_days==null?9999:Number(b.maximum_days))-Number(b.minimum_days||1);
+                return wa-wb;
+            });
+            return matches[0]||null;
+        }
+        async function calculateQuote() {
+            const service=document.getElementById('service').value;
+            const duration=Math.max(1,Number(document.getElementById('duration')?.value||1));
+            const location=document.getElementById('location')?.value.trim()||'';
+            const jobType=document.getElementById('jobType')?.value||'Standard';
+            const cfg={url:(window.TASKMTAANI_SUPABASE_URL||'').replace(/\/$/,''),key:window.TASKMTAANI_SUPABASE_ANON_KEY||''};
+            currentQuote=null;
+            if(!service){quotePanel?.classList.add('hidden');return;}
+            quotePanel?.classList.remove('hidden'); quoteAmount.textContent='Checking…'; quoteDescription.textContent='Finding the best configured price for this service.';
+            if(!cfg.url||!cfg.key||cfg.url.startsWith('YOUR_')||cfg.key.startsWith('YOUR_')){quoteAmount.textContent='KES —';quoteDescription.textContent='Supabase pricing is not configured.';return;}
+            try{
+                const sr=await fetch(cfg.url+'/rest/v1/services?name=eq.'+encodeURIComponent(service)+'&select=id,name&limit=1',{headers:{apikey:cfg.key,Authorization:'Bearer '+cfg.key}});
+                if(!sr.ok)throw Error('service lookup failed'); const services=await sr.json(); const serviceId=services[0]?.id; if(!serviceId)throw Error('service not found');
+                const pr=await fetch(cfg.url+'/rest/v1/service_pricing?service_id=eq.'+encodeURIComponent(serviceId)+'&active=eq.true&select=id,service_id,rate_type,base_amount,currency,minimum_days,maximum_days,location_rule,job_type_rule,priority,notes&order=priority.desc',{headers:{apikey:cfg.key,Authorization:'Bearer '+cfg.key}});
+                if(!pr.ok)throw Error('pricing lookup failed'); const rows=await pr.json(); const chosen=choosePricingRule(rows,duration,location,jobType);
+                if(!chosen){quoteAmount.textContent='KES —';quoteDescription.textContent='No matching price is configured for this service, duration, location and job type.';quoteStatus.textContent='An administrator must add a matching pricing rule before an automatic quotation can be issued.';return;}
+                const minDays=Math.max(1,Number(chosen.minimum_days||1)); const billableDays=chosen.rate_type==='per_day'?Math.max(duration,minDays):1; const amount=Number(chosen.base_amount)*billableDays;
+                currentQuote={pricing_id:chosen.id,service_id:serviceId,amount,currency:chosen.currency||'KES',rate_type:chosen.rate_type,billable_days:billableDays,location_rule:chosen.location_rule||'*',job_type_rule:chosen.job_type_rule||'*'};
+                quoteAmount.textContent=(chosen.currency||'KES')+' '+amount.toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2});
+                const ruleBits=[]; if(chosen.location_rule&&chosen.location_rule!=='*')ruleBits.push('location: '+chosen.location_rule); if(chosen.job_type_rule&&chosen.job_type_rule!=='*')ruleBits.push('job: '+chosen.job_type_rule);
+                quoteDescription.textContent=chosen.rate_type==='per_day'?`${chosen.currency||'KES'} ${Number(chosen.base_amount).toLocaleString('en-KE')} per day × ${billableDays} day${billableDays===1?'':'s'}${ruleBits.length?' · '+ruleBits.join(' · '):''}`:`${chosen.currency||'KES'} ${Number(chosen.base_amount).toLocaleString('en-KE')} per service${ruleBits.length?' · '+ruleBits.join(' · '):''}`;
+                quoteStatus.textContent='This is an estimated quotation. TaskMtaani confirms the final amount before payment.';
+            }catch(err){quoteAmount.textContent='KES —';quoteDescription.textContent='Unable to calculate the quotation right now.';quoteStatus.textContent='You can still submit the request; TaskMtaani can confirm the price manually.';console.warn('Quotation lookup failed:',err);}
+        }
+        document.getElementById('service')?.addEventListener('change',calculateQuote);
+        document.getElementById('duration')?.addEventListener('input',calculateQuote);
+        document.getElementById('location')?.addEventListener('input',calculateQuote);
+        document.getElementById('jobType')?.addEventListener('change',calculateQuote);
+
+        bookingForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const service = document.getElementById('service').value; const date = document.getElementById('date').value; const time = document.getElementById('time').value;
+            const duration = Math.max(1, Number(document.getElementById('duration')?.value || 1));
+            const jobType = document.getElementById('jobType')?.value || 'Standard';
+            const gender = document.querySelector('input[name="gender"]:checked')?.value || 'No Preference';
+            const location = document.getElementById('location').value.trim(); const name = document.getElementById('name').value.trim();
+            const customerPhone = document.getElementById('customerPhone').value.trim(); const details = document.getElementById('details').value.trim();
+            if (!service || !date || !location || !details) { alert('Please fill in all required fields (Service, Date, Location, and Task Details).'); return; }
+            if (!currentQuote && quotePanel && !quotePanel.classList.contains('hidden')) await calculateQuote();
+            const formattedDate = new Date(date).toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
+            let message = `Hello TaskMtaani, I'd like to request a service.\n\n*Service:* ${service}\n*Preferred Date:* ${formattedDate}\n*Duration:* ${duration} day${duration===1?'':'s'}\n`;
+            if (time) message += `*Preferred Time:* ${time}\n`;
+            message += `*Preferred Gender:* ${gender}\n*Job Type:* ${jobType}\n*Location:* ${location}\n*Task Details:* ${details}\n`;
+            if (currentQuote) message += `*Estimated Quote:* ${currentQuote.currency} ${currentQuote.amount.toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2})}\n`;
+            if (name) message += `*Name:* ${name}\n`; if (customerPhone) message += `*My Phone:* ${customerPhone}\n`;
+            message += `\nPlease confirm availability and the final price before payment. Thank you.`;
+            const token = localStorage.getItem('taskmtaani_access_token');
+            const cfg = {url:(window.TASKMTAANI_SUPABASE_URL||'').replace(/\/$/,''), key:window.TASKMTAANI_SUPABASE_ANON_KEY||''};
+            if (token && cfg.url && cfg.key && !cfg.url.startsWith('YOUR_') && !cfg.key.startsWith('YOUR_')) {
+              try {
+                const u = await fetch(cfg.url+'/auth/v1/user',{headers:{apikey:cfg.key,Authorization:'Bearer '+token}}); const user = await u.json();
+                if (u.ok && user?.id) {
+                  let serviceId = currentQuote?.service_id || null;
+                  if (!serviceId) { const sr = await fetch(cfg.url+'/rest/v1/services?name=eq.'+encodeURIComponent(service)+'&select=id&limit=1',{headers:{apikey:cfg.key,Authorization:'Bearer '+token}}); if (sr.ok) serviceId=(await sr.json())[0]?.id||null; }
+                  const payload={customer_id:user.id,service_id:serviceId,service_name:service,preferred_date:date,preferred_time:time||null,preferred_gender:gender,job_type:jobType,location,customer_name:name||user.user_metadata?.full_name||user.email||'',customer_phone:customerPhone||user.user_metadata?.phone||'',task_details:details,status:'pending',estimated_price:currentQuote?.amount||null,quoted_amount:currentQuote?.amount||null,quote_status:currentQuote?'estimated':'pending',duration_days:duration,pricing_rule_id:currentQuote?.pricing_id||null,currency:currentQuote?.currency||'KES',whatsapp_message:message};
+                  const br=await fetch(cfg.url+'/rest/v1/bookings',{method:'POST',headers:{apikey:cfg.key,Authorization:'Bearer '+token,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(payload)});
+                  if(!br.ok) throw Error(await br.text()); window.dispatchEvent(new Event('taskmtaani-booking-saved'));
+                }
+              } catch(err) { console.warn('Booking was not saved to Supabase:',err); }
+            }
+            window.open(`https://wa.me/254719535117?text=${encodeURIComponent(message)}`, '_blank');
+        });
+        calculateQuote();
+    </script>
+
+<!-- Item 13: Admin Dashboard -->
+<section id="admin-dashboard" class="admin-shell">
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8"><div class="flex flex-col lg:flex-row gap-6">
+<aside class="admin-sidebar rounded-2xl p-4 lg:w-64 lg:shrink-0"><div class="flex items-center justify-between mb-6"><div><div class="text-xl font-bold text-white">Task<span class="text-emerald-400">Mtaani</span></div><div class="text-xs text-slate-400">Admin Dashboard</div></div><button id="admin-exit" type="button" class="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700" title="Sign out of TaskMtaani"><i class="fa-solid fa-right-from-bracket"></i><span>Sign out</span></button></div>
+<nav class="space-y-1"><button class="admin-nav-btn active" data-admin-panel="overview"><i class="fa-solid fa-chart-line w-5"></i> Overview</button><button class="admin-nav-btn" data-admin-panel="services"><i class="fa-solid fa-list-check w-5"></i> Services</button><button class="admin-nav-btn" data-admin-panel="helpers"><i class="fa-solid fa-users w-5"></i> Helpers</button><button class="admin-nav-btn" data-admin-panel="provider-applications"><i class="fa-solid fa-user-check w-5"></i> Applications</button><button class="admin-nav-btn" data-admin-panel="bookings"><i class="fa-solid fa-calendar-check w-5"></i> Bookings</button><button class="admin-nav-btn" data-admin-panel="pricing"><i class="fa-solid fa-tags w-5"></i> Pricing</button><button class="admin-nav-btn" data-admin-panel="assignments"><i class="fa-solid fa-user-tag w-5"></i> Assignments</button><button class="admin-nav-btn" data-admin-panel="reviews"><i class="fa-solid fa-star w-5"></i> Testimonials</button><button class="admin-nav-btn" data-admin-panel="settings"><i class="fa-solid fa-sliders w-5"></i> Website Settings</button><button class="admin-nav-btn" data-admin-panel="versions"><i class="fa-solid fa-clock-rotate-left w-5"></i> Version History</button></nav>
+<div class="mt-6 pt-4 border-t border-slate-700 text-xs text-slate-400"><div class="flex items-center gap-2"><span id="admin-connection-dot" class="w-2 h-2 rounded-full bg-slate-500"></span><span id="admin-connection-text">Backend not connected</span></div></div></aside>
+<main class="flex-1 min-w-0"><div class="bg-white rounded-2xl border border-gray-200 p-4 md:p-6 mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4"><div><p class="text-sm text-emerald-600 font-semibold">ADMINISTRATION</p><h1 class="text-2xl md:text-3xl font-bold text-gray-900">Manage TaskMtaani</h1><p class="text-gray-500 text-sm mt-1">Manage services, helpers, bookings, reviews and website settings.</p></div><div class="flex items-center gap-2"><span class="hidden sm:inline text-xs text-gray-500">Use Sign out when finished</span><button id="admin-refresh" class="px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-semibold"><i class="fa-solid fa-rotate mr-2"></i>Refresh</button></div></div>
+<div id="admin-panel-overview" class="admin-panel active"><div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6"><div class="admin-stat"><div class="text-sm text-gray-500">Services</div><div id="stat-services" class="text-3xl font-bold mt-1">—</div></div><div class="admin-stat"><div class="text-sm text-gray-500">Active Helpers</div><div id="stat-helpers" class="text-3xl font-bold mt-1">—</div></div><div class="admin-stat"><div class="text-sm text-gray-500">Bookings</div><div id="stat-bookings" class="text-3xl font-bold mt-1">—</div></div><div class="admin-stat"><div class="text-sm text-gray-500">Reviews</div><div id="stat-reviews" class="text-3xl font-bold mt-1">—</div></div></div><div class="bg-white rounded-2xl border border-gray-200 p-5"><h2 class="font-bold text-lg mb-2">Admin readiness</h2><p class="text-gray-600 text-sm">This dashboard is prepared for Supabase. Live administration becomes available after Supabase URL, anon key, authentication, tables and security policies are configured.</p><div id="admin-message" class="mt-4 p-3 rounded-lg bg-gray-50 text-sm text-gray-600">Backend not connected.</div></div></div>
+<div id="admin-panel-services" class="admin-panel"><div class="bg-white rounded-2xl border p-5 mb-5"><div class="flex justify-between items-center gap-3 mb-4"><div><h2 class="text-xl font-bold">Services</h2><p class="text-sm text-gray-500">Create and maintain the service catalogue.</p></div><button class="admin-primary-action px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold text-sm" data-form="service-form"><i class="fa-solid fa-plus mr-2"></i>Add Service</button></div><form id="service-form" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4"><input type="hidden" id="service-id"><label class="text-sm font-medium">Service name<input id="service-name" class="admin-input mt-1" required></label><label class="text-sm font-medium">Icon class<input id="service-icon" class="admin-input mt-1" placeholder="fa-solid fa-broom"></label><label class="text-sm font-medium md:col-span-2">Description<textarea id="service-description" class="admin-input mt-1" rows="3"></textarea></label><label class="flex items-center gap-2 text-sm md:col-span-2"><input id="service-active" type="checkbox" checked> Active service</label><div class="md:col-span-2 flex gap-2"><button class="px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold" type="submit">Save Service</button><button class="px-4 py-2 rounded-lg bg-gray-100" type="button" data-cancel-form="service-form">Cancel</button></div></form></div><div class="bg-white rounded-2xl border p-5 admin-table-wrap"><table class="admin-table"><thead><tr><th>Name</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead><tbody id="services-table"><tr><td colspan="4">Connect Supabase to load services.</td></tr></tbody></table></div></div>
+<div id="admin-panel-helpers" class="admin-panel"><div class="bg-white rounded-2xl border p-5 mb-5"><div class="flex justify-between items-center gap-3"><div><h2 class="text-xl font-bold">Helpers / Providers</h2><p class="text-sm text-gray-500">Maintain available professionals and verification information.</p></div><button class="admin-primary-action px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold text-sm" data-form="helper-form"><i class="fa-solid fa-plus mr-2"></i>Add Helper</button></div><form id="helper-form" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4 border-t mt-4 pt-4"><input type="hidden" id="helper-id"><label class="text-sm font-medium">Full name<input id="helper-name" class="admin-input mt-1" required></label><label class="text-sm font-medium">Profession<input id="helper-profession" class="admin-input mt-1" required></label><label class="text-sm font-medium">Phone<input id="helper-phone" class="admin-input mt-1"></label><label class="text-sm font-medium">WhatsApp<input id="helper-whatsapp" class="admin-input mt-1"></label><label class="text-sm font-medium">Experience (years)<input id="helper-experience" type="number" min="0" class="admin-input mt-1"></label><label class="text-sm font-medium">Service area<input id="helper-area" class="admin-input mt-1"></label><label class="text-sm font-medium">Availability<input id="helper-availability" class="admin-input mt-1"></label><label class="text-sm font-medium">Verification<select id="helper-verification" class="admin-input mt-1"><option value="pending">Pending</option><option value="verified">Verified</option><option value="rejected">Rejected</option></select></label><label class="text-sm font-medium">References<select id="helper-reference" class="admin-input mt-1"><option value="pending">Pending</option><option value="checked">Checked</option><option value="not_checked">Not checked</option></select></label><label class="flex items-center gap-2 text-sm md:col-span-2"><input id="helper-active" type="checkbox" checked> Active</label><div class="md:col-span-2 flex gap-2"><button class="px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold" type="submit">Save Helper</button><button class="px-4 py-2 rounded-lg bg-gray-100" type="button" data-cancel-form="helper-form">Cancel</button></div></form></div><div class="bg-white rounded-2xl border p-5 admin-table-wrap"><table class="admin-table"><thead><tr><th>Name</th><th>Profession</th><th>Area</th><th>Verification</th><th>Active</th><th>Actions</th></tr></thead><tbody id="helpers-table"><tr><td colspan="6">Connect Supabase to load helpers.</td></tr></tbody></table></div></div>
+<div id="admin-panel-provider-applications" class="admin-panel">
+<div class="bg-white rounded-2xl border p-5 mb-5"><div class="flex justify-between items-center gap-3 mb-4"><div><h2 class="text-xl font-bold">Helper Applications</h2><p class="text-sm text-gray-500">Review applicants before creating a provider account. Approval gives the applicant provider access, but does not automatically mark them verified or active.</p></div><button id="provider-applications-refresh" class="px-4 py-2 rounded-lg bg-gray-900 text-white font-semibold text-sm">Refresh</button></div><div id="provider-applications-message" class="hidden mb-4 rounded-lg p-3 text-sm"></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Applicant</th><th>Profession</th><th>Experience</th><th>Area</th><th>Status</th><th>Submitted</th><th>Action</th></tr></thead><tbody id="provider-applications-table"><tr><td colspan="7">Connect Supabase to load applications.</td></tr></tbody></table></div></div>
+<div class="bg-white rounded-2xl border p-5"><h3 class="font-bold text-lg mb-2">Approval workflow</h3><ol class="list-decimal pl-5 space-y-1 text-sm text-gray-600"><li>Review the applicant's profession, experience, area and availability.</li><li>Confirm identity and references using your normal verification process.</li><li>Approve the application to create/link the provider profile.</li><li>Use Helpers to set verification status and active status after checks are complete.</li><li>Assign the provider to bookings from the Bookings area.</li></ol></div>
+</div>
+
+<div id="admin-panel-assignments" class="admin-panel">
+<div class="bg-white rounded-2xl border p-5 mb-5"><div class="flex justify-between items-center gap-3 mb-4"><div><h2 class="text-xl font-bold">Provider-to-Booking Assignment</h2><p class="text-sm text-gray-500">Assign pending or confirmed bookings to active, verified helpers who offer the requested service.</p></div><button id="assignments-refresh" class="px-4 py-2 rounded-lg bg-gray-900 text-white font-semibold text-sm">Refresh</button></div><div id="assignments-message" class="hidden mb-4 rounded-lg p-3 text-sm"></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Booking</th><th>Service</th><th>Date</th><th>Location</th><th>Current Helper</th><th>Assign Helper</th><th>Status</th></tr></thead><tbody id="assignments-table"><tr><td colspan="7">Connect Supabase to load bookings.</td></tr></tbody></table></div></div>
+<div class="bg-white rounded-2xl border p-5"><h3 class="font-bold text-lg mb-2">Assignment rules</h3><ul class="list-disc pl-5 space-y-1 text-sm text-gray-600"><li>Only active and verified helpers are offered for assignment.</li><li>Helpers must have an active provider-service entry matching the booking service.</li><li>Assignment is controlled by administrators.</li><li>Assigning a helper changes the booking status to <strong>assigned</strong>.</li><li>Changing or removing an assignment does not change the helper's verification status.</li></ul></div></div>
+<div id="admin-panel-pricing" class="admin-panel">
+<div class="bg-white rounded-2xl border p-5 mb-5"><div class="flex justify-between items-center gap-3 mb-4"><div><h2 class="text-xl font-bold">Pricing Rules</h2><p class="text-sm text-gray-500">Set different prices by service, duration, location and job type. Higher priority rules win when several rules match.</p></div><button class="admin-primary-action px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold text-sm" data-form="pricing-form"><i class="fa-solid fa-plus mr-2"></i>Add Pricing Rule</button></div>
+<form id="pricing-form" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-t pt-4">
+<input type="hidden" id="pricing-id">
+<label class="text-sm font-medium">Service<select id="pricing-service" class="admin-input mt-1" required><option value="">Loading services…</option></select></label>
+<label class="text-sm font-medium">Rate type<select id="pricing-rate-type" class="admin-input mt-1"><option value="per_day">Per day</option><option value="per_service">Per service</option></select></label>
+<label class="text-sm font-medium">Price (KES)<input id="pricing-amount" type="number" min="0" step="0.01" class="admin-input mt-1" required></label>
+<label class="text-sm font-medium">Minimum days<input id="pricing-min-days" type="number" min="1" value="1" class="admin-input mt-1"></label>
+<label class="text-sm font-medium">Maximum days <span class="font-normal text-gray-400">(blank = any)</span><input id="pricing-max-days" type="number" min="1" class="admin-input mt-1"></label>
+<label class="text-sm font-medium">Location rule <span class="font-normal text-gray-400">(use * for all)</span><input id="pricing-location" class="admin-input mt-1" placeholder="Nairobi, Kilimani, Westlands or *"></label>
+<label class="text-sm font-medium">Job type rule <span class="font-normal text-gray-400">(use * for all)</span><input id="pricing-job-type" class="admin-input mt-1" placeholder="Standard or Emergency / Urgent or *"></label>
+<label class="text-sm font-medium">Priority<input id="pricing-priority" type="number" min="0" max="10000" value="0" class="admin-input mt-1"></label>
+<label class="text-sm font-medium">Currency<input id="pricing-currency" class="admin-input mt-1" value="KES"></label>
+<label class="flex items-center gap-2 text-sm md:col-span-2 lg:col-span-3"><input id="pricing-active" type="checkbox" checked> Active pricing rule</label>
+<label class="text-sm font-medium md:col-span-2 lg:col-span-3">Notes<textarea id="pricing-notes" class="admin-input mt-1" rows="2" placeholder="Optional internal note about this price"></textarea></label>
+<div class="md:col-span-2 lg:col-span-3 flex gap-2"><button class="px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold" type="submit">Save Pricing Rule</button><button class="px-4 py-2 rounded-lg bg-gray-100" type="button" data-cancel-form="pricing-form">Cancel</button></div>
+</form></div>
+<div class="bg-white rounded-2xl border p-5 admin-table-wrap"><table class="admin-table"><thead><tr><th>Service</th><th>Rate</th><th>Duration</th><th>Location</th><th>Job Type</th><th>Priority</th><th>Status</th><th>Actions</th></tr></thead><tbody id="pricing-table"><tr><td colspan="8">Connect Supabase to load pricing rules.</td></tr></tbody></table></div>
+<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mt-5 text-sm text-emerald-900"><strong>How matching works:</strong> TaskMtaani first matches the service, then duration, location and job type. Among matching rules, the highest priority wins. A location or job type of <code>*</code> means “all”.</div>
+</div>
+<div id="admin-panel-bookings" class="admin-panel"><div class="bg-white rounded-2xl border p-5"><h2 class="text-xl font-bold">Bookings</h2><p class="text-sm text-gray-500 mb-5">Review requests and update their status.</p><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Customer</th><th>Service</th><th>Date</th><th>Location</th><th>Status</th><th>Update</th></tr></thead><tbody id="bookings-table"><tr><td colspan="6">Connect Supabase to load bookings.</td></tr></tbody></table></div></div></div>
+<div id="admin-panel-reviews" class="admin-panel"><div class="bg-white rounded-2xl border p-5"><h2 class="text-xl font-bold">Testimonials</h2><p class="text-sm text-gray-500 mb-5">Approve genuine customer reviews before publishing.</p><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Customer</th><th>Location</th><th>Rating</th><th>Review</th><th>Status</th><th>Action</th></tr></thead><tbody id="reviews-table"><tr><td colspan="6">Connect Supabase to load testimonials.</td></tr></tbody></table></div></div></div>
+<div id="admin-panel-settings" class="admin-panel"><div class="bg-white rounded-2xl border p-5"><h2 class="text-xl font-bold">Website Settings</h2><p class="text-sm text-gray-500 mb-5">Manage public-facing settings.</p><form id="settings-form" class="grid gap-4 max-w-3xl"><label class="text-sm font-medium">Hero background image URL<input id="setting-hero" class="admin-input mt-1"></label><label class="text-sm font-medium">Contact email<input id="setting-email" class="admin-input mt-1" value="taskmtaani@gmail.com"></label><label class="text-sm font-medium">WhatsApp number<input id="setting-whatsapp" class="admin-input mt-1" value="254719535117"></label><button class="w-fit px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold" type="submit">Save Website Settings</button></form></div></div>
+<div id="admin-panel-versions" class="admin-panel"><div class="bg-white rounded-2xl border p-5"><div class="flex justify-between items-center gap-3 mb-5"><div><h2 class="text-xl font-bold">Version History</h2><p class="text-sm text-gray-500">Save and later restore website configuration snapshots.</p></div><button id="create-version" class="px-4 py-2 rounded-lg bg-gray-900 text-white font-semibold text-sm">Save Current Version</button></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Created</th><th>Type</th><th>Summary</th><th>Action</th></tr></thead><tbody id="versions-table"><tr><td colspan="4">Connect Supabase to load version history.</td></tr></tbody></table></div></div></div>
+</main></div></div></section>
+
+<script>
+(function(){
+const cfg=window.TASKMTAANI_CONFIG||{}, tables=cfg.tables||{}, $=id=>document.getElementById(id), state={token:window.TASKMTAANI_ADMIN_TOKEN||localStorage.getItem('taskmtaani_access_token')||null};
+const supabase=()=>({url:(window.TASKMTAANI_SUPABASE_URL||'').replace(/\/$/,''),key:window.TASKMTAANI_SUPABASE_ANON_KEY||''});
+const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+async function api(path,opt={}){const c=supabase();if(!c.url||!c.key)throw Error('Supabase URL and anon key are not configured.');const headers={apikey:c.key,Authorization:`Bearer ${state.token||c.key}`,'Content-Type':'application/json',...(opt.headers||{})};const r=await fetch(`${c.url}/rest/v1/${path}`,{...opt,headers});if(!r.ok)throw Error(await r.text()||`Request failed (${r.status})`);return r.status===204?null:r.json();}
+function connection(ok,msg){$('admin-connection-dot')?.classList.toggle('bg-emerald-500',ok);$('admin-connection-dot')?.classList.toggle('bg-slate-500',!ok);if($('admin-connection-text'))$('admin-connection-text').textContent=msg;if($('admin-message'))$('admin-message').textContent=msg;}
+async function stats(){for(const [id,t] of [['stat-services',tables.services],['stat-helpers',tables.providers],['stat-bookings',tables.bookings],['stat-reviews',tables.testimonials]]){try{const r=await api(`${t}?select=id&limit=1000`);$(id).textContent=r.length}catch{$(id).textContent='—'}}}
+async function services(){const b=$('services-table');try{const r=await api(`${tables.services}?select=id,name,description,icon,active&order=name.asc`);b.innerHTML=r.length?r.map(x=>`<tr><td class="font-semibold">${esc(x.name)}</td><td>${esc(x.description)}</td><td>${x.active?'Active':'Inactive'}</td><td><button class="text-emerald-700 mr-3" data-edit-service="${esc(x.id)}">Edit</button><button class="text-red-600" data-del-service="${esc(x.id)}">Delete</button></td></tr>`).join(''):'<tr><td colspan="4">No services found.</td></tr>'}catch(e){b.innerHTML=`<tr><td colspan="4" class="text-red-600">${esc(e.message)}</td></tr>`}}
+async function helpers(){const b=$('helpers-table');try{const r=await api(`${tables.providers}?select=id,full_name,profession,service_area,verification_status,active&order=full_name.asc`);b.innerHTML=r.length?r.map(x=>`<tr><td class="font-semibold">${esc(x.full_name)}</td><td>${esc(x.profession)}</td><td>${esc(x.service_area)}</td><td>${esc(x.verification_status||'pending')}</td><td>${x.active?'Yes':'No'}</td><td><button class="text-emerald-700" data-helper-id="${esc(x.id)}">View</button></td></tr>`).join(''):'<tr><td colspan="6">No helpers found.</td></tr>'}catch(e){b.innerHTML=`<tr><td colspan="6" class="text-red-600">${esc(e.message)}</td></tr>`}}
+async function bookings(){const b=$('bookings-table');try{const r=await api(`${tables.bookings}?select=*&order=created_at.desc&limit=100`);b.innerHTML=r.length?r.map(x=>`<tr><td>${esc(x.customer_name||x.name||'Customer')}</td><td>${esc(x.service||x.service_name||'')}</td><td>${esc(x.preferred_date||x.date||'')}</td><td>${esc(x.location||'')}</td><td>${esc(x.status||'pending')}</td><td><select class="admin-input text-xs" data-booking="${esc(x.id)}"><option ${x.status==='pending'?'selected':''}>pending</option><option ${x.status==='confirmed'?'selected':''}>confirmed</option><option ${x.status==='assigned'?'selected':''}>assigned</option><option ${x.status==='completed'?'selected':''}>completed</option><option ${x.status==='cancelled'?'selected':''}>cancelled</option></select></td></tr>`).join(''):'<tr><td colspan="6">No bookings found.</td></tr>'}catch(e){b.innerHTML=`<tr><td colspan="6" class="text-red-600">${esc(e.message)}</td></tr>`}}
+async function reviews(){const b=$('reviews-table');try{const r=await api(`${tables.testimonials}?select=*&order=created_at.desc&limit=100`);b.innerHTML=r.length?r.map(x=>`<tr><td>${esc(x.customer_name||x.name||'')}</td><td>${esc(x.location||'')}</td><td>${esc(x.rating||'')}</td><td>${esc(x.review||x.comment||'')}</td><td>${esc(x.status||'pending')}</td><td><button class="text-emerald-700" data-review="${esc(x.id)}">Approve</button></td></tr>`).join(''):'<tr><td colspan="6">No testimonials found.</td></tr>'}catch(e){b.innerHTML=`<tr><td colspan="6" class="text-red-600">${esc(e.message)}</td></tr>`}}
+async function settings(){try{const r=await api(`${tables.settings}?select=setting_key,setting_value&setting_key=in.(hero_background_url,contact_email,whatsapp_number)`);const m=Object.fromEntries(r.map(x=>[x.setting_key,x.setting_value]));$('setting-hero').value=m.hero_background_url||'';$('setting-email').value=m.contact_email||'taskmtaani@gmail.com';$('setting-whatsapp').value=m.whatsapp_number||'254719535117'}catch{}}
+async function versions(){const b=$('versions-table');try{const r=await api(`${tables.siteVersions||'site_versions'}?select=*&order=created_at.desc&limit=100`);b.innerHTML=r.length?r.map(x=>`<tr><td>${esc(x.created_at)}</td><td>${esc(x.change_type||x.type||'')}</td><td>${esc(x.summary||x.description||'')}</td><td><button class="text-emerald-700" data-restore="${esc(x.id)}">Restore</button></td></tr>`).join(''):'<tr><td colspan="4">No versions found.</td></tr>'}catch(e){b.innerHTML=`<tr><td colspan="4" class="text-red-600">${esc(e.message)}</td></tr>`}}
+async function pricing(){const b=$('pricing-table');try{const [r,svcs]=await Promise.all([api(`${tables.servicePricing||'service_pricing'}?select=*&order=priority.desc,created_at.desc&limit=500`),api(`${tables.services}?select=id,name&order=name.asc`)]);const names=Object.fromEntries(svcs.map(x=>[x.id,x.name]));$('pricing-service').innerHTML='<option value="">Select service…</option>'+svcs.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join('');b.innerHTML=r.length?r.map(x=>`<tr><td class="font-semibold">${esc(names[x.service_id]||'Unknown')}</td><td>KES ${Number(x.base_amount||0).toLocaleString('en-KE')} / ${esc(x.rate_type==='per_day'?'day':'service')}</td><td>${Number(x.minimum_days||1)}${x.maximum_days?'–'+esc(x.maximum_days):'+'} day(s)</td><td>${esc(x.location_rule||'*')}</td><td>${esc(x.job_type_rule||'*')}</td><td>${esc(x.priority||0)}</td><td>${x.active?'Active':'Inactive'}</td><td><button class="text-emerald-700 mr-3" data-edit-pricing="${esc(x.id)}">Edit</button><button class="text-red-600" data-del-pricing="${esc(x.id)}">Delete</button></td></tr>`).join(''):'<tr><td colspan="8">No pricing rules found.</td></tr>'}catch(e){b.innerHTML=`<tr><td colspan="8" class="text-red-600">${esc(e.message)}</td></tr>`}}
+function clearPricingForm(){$('pricing-id').value='';$('pricing-form').reset();$('pricing-min-days').value='1';$('pricing-priority').value='0';$('pricing-currency').value='KES';$('pricing-active').checked=true;$('pricing-form').classList.remove('hidden')}
+async function editPricing(id){try{const r=await api(`${tables.servicePricing||'service_pricing'}?id=eq.${encodeURIComponent(id)}&select=*&limit=1`);const x=r[0];if(!x)return;await pricing();$('pricing-id').value=x.id;$('pricing-service').value=x.service_id;$('pricing-rate-type').value=x.rate_type;$('pricing-amount').value=x.base_amount;$('pricing-min-days').value=x.minimum_days||1;$('pricing-max-days').value=x.maximum_days??'';$('pricing-location').value=x.location_rule||'*';$('pricing-job-type').value=x.job_type_rule||'*';$('pricing-priority').value=x.priority||0;$('pricing-currency').value=x.currency||'KES';$('pricing-active').checked=!!x.active;$('pricing-notes').value=x.notes||'';$('pricing-form').classList.remove('hidden');$('pricing-form').scrollIntoView({behavior:'smooth',block:'start'})}catch(e){alert(e.message)}}
+function panel(n){document.querySelectorAll('.admin-panel').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.admin-nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.adminPanel===n));$('admin-panel-'+n)?.classList.add('active');if(n==='overview')stats();if(n==='services')services();if(n==='helpers')helpers();if(n==='bookings')bookings();if(n==='pricing')pricing();if(n==='assignments')assignments();if(n==='reviews')reviews();if(n==='settings')settings();if(n==='versions')versions()}
+async function assignments(){const b=$('assignments-table');try{const [rows,providers,ps]=await Promise.all([api(`${tables.bookings}?select=*&status=in.(pending,confirmed,assigned)&order=preferred_date.asc,preferred_time.asc&limit=200`),api(`${tables.providers}?select=id,full_name,profession,service_area,verification_status,active&verification_status=eq.verified&active=eq.true&order=full_name.asc`),api(`${tables.providerServices||'provider_services'}?select=id,provider_id,service_id,rate_type,rate_amount,active&active=eq.true`)]);const servicesList=await api(`${tables.services}?select=id,name&active=eq.true&order=name.asc`);const svcById=Object.fromEntries(servicesList.map(s=>[s.id,s.name]));const psByService={};ps.forEach(x=>{(psByService[x.service_id]??=[]).push(x.provider_id)});const providerMap=Object.fromEntries(providers.map(p=>[p.id,p]));const optionsFor=serviceName=>{const sid=servicesList.find(s=>s.name.toLowerCase()===String(serviceName||'').toLowerCase())?.id;const ids=psByService[sid]||[];return providers.filter(p=>ids.includes(p.id)).map(p=>`<option value="${esc(p.id)}">${esc(p.full_name)} — ${esc(p.profession)} (${esc(p.service_area||'')})</option>`).join('')};b.innerHTML=rows.length?rows.map(x=>{const name=x.provider_id?(providerMap[x.provider_id]?.full_name||'Assigned helper'):'Unassigned';return `<tr><td class="font-semibold">${esc(x.id).slice(0,8)}…</td><td>${esc(x.service_name||x.service||'')}</td><td>${esc(x.preferred_date||'')} ${esc(x.preferred_time||'')}</td><td>${esc(x.location||'')}</td><td>${esc(name)}</td><td><select class="admin-input text-xs" data-assign-booking="${esc(x.id)}"><option value="">${x.provider_id?'Change / unassign':'Select helper'}</option>${optionsFor(x.service_name||x.service)}</select></td><td>${esc(x.status||'pending')}</td></tr>`}).join(''):'<tr><td colspan="7">No pending, confirmed or assigned bookings.</td></tr>'}catch(e){b.innerHTML=`<tr><td colspan="7" class="text-red-600">${esc(e.message)}</td></tr>`}}
+$('assignments-refresh')?.addEventListener('click',assignments);
+document.addEventListener('change',async e=>{const a=e.target.closest('[data-assign-booking]');if(!a)return;try{const id=a.dataset.assignBooking;const providerId=a.value||null;await api(`${tables.bookings}?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({provider_id:providerId,status:providerId?'assigned':'confirmed',updated_at:new Date().toISOString()})});const m=$('assignments-message');m.textContent=providerId?'Helper assigned successfully.':'Helper assignment removed.';m.className='mb-4 rounded-lg p-3 text-sm bg-emerald-50 text-emerald-700';await assignments()}catch(err){const m=$('assignments-message');m.textContent=err.message;m.className='mb-4 rounded-lg p-3 text-sm bg-red-50 text-red-700'}});
+async function enter(){
+  if(window.TASKMTAANI_ADMIN_TOKEN){enterAuthenticated();return true;}
+  if(!window.TaskMtaaniAuth){setTimeout(enter,0);return false;}
+  const ok=await window.TaskMtaaniAuth.tryExisting();
+  if(!ok){exit();window.TaskMtaaniAuth.show();return false;}
+  enterAuthenticated();
+  return true;
+}
+function enterAuthenticated(){document.body.classList.add('admin-mode');panel('overview');const c=supabase();connection(!!(c.url&&c.key&&!c.url.startsWith('YOUR_')&&!c.key.startsWith('YOUR_')),c.url&&c.key&&!c.url.startsWith('YOUR_')&&!c.key.startsWith('YOUR_')?'Supabase connected.':'Supabase connection is not configured in this file.')}
+function exit(){document.body.classList.remove('admin-mode');history.replaceState(null,'',location.pathname+location.search)}
+function adminSignOut(){
+  localStorage.removeItem('taskmtaani_access_token');
+  localStorage.removeItem('taskmtaani_refresh_token');
+  window.TASKMTAANI_ADMIN_TOKEN=null;
+  try{sessionStorage.removeItem('taskmtaani_admin_session')}catch(e){}
+  exit();
+  window.location.reload();
+}
+document.querySelectorAll('.admin-nav-btn').forEach(b=>b.onclick=()=>panel(b.dataset.adminPanel));document.querySelectorAll('.admin-primary-action').forEach(b=>b.onclick=()=>$(b.dataset.form)?.classList.toggle('hidden'));document.querySelectorAll('[data-cancel-form]').forEach(b=>b.onclick=()=>$(b.dataset.cancelForm)?.classList.add('hidden'));$('admin-exit')?.addEventListener('click',()=>{if(confirm('Sign out of TaskMtaani?'))adminSignOut()});$('admin-refresh')?.addEventListener('click',()=>panel(document.querySelector('.admin-nav-btn.active')?.dataset.adminPanel||'overview'));
+$('service-form')?.addEventListener('submit',async e=>{e.preventDefault();try{const id=$('service-id').value;const body={name:$('service-name').value.trim(),description:$('service-description').value.trim(),icon:$('service-icon').value.trim(),active:$('service-active').checked,updated_at:new Date().toISOString()};await api(id?`${tables.services}?id=eq.${encodeURIComponent(id)}`:tables.services,{method:id?'PATCH':'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(body)});e.target.reset();$('service-id').value='';e.target.classList.add('hidden');services();stats();alert('Service saved.')}catch(x){alert(x.message)}});
+$('helper-form')?.addEventListener('submit',async e=>{e.preventDefault();try{await api(tables.providers,{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({full_name:$('helper-name').value.trim(),profession:$('helper-profession').value.trim(),phone:$('helper-phone').value.trim(),whatsapp:$('helper-whatsapp').value.trim(),experience_years:Number($('helper-experience').value)||0,service_area:$('helper-area').value.trim(),availability:$('helper-availability').value.trim(),verification_status:$('helper-verification').value,reference_status:$('helper-reference').value,active:$('helper-active').checked})});e.target.reset();e.target.classList.add('hidden');helpers();stats();alert('Helper saved.')}catch(x){alert(x.message)}});
+$('settings-form')?.addEventListener('submit',async e=>{e.preventDefault();try{for(const [key,value] of Object.entries({hero_background_url:$('setting-hero').value.trim(),contact_email:$('setting-email').value.trim(),whatsapp_number:$('setting-whatsapp').value.trim()})){await api(`${tables.settings}?setting_key=eq.${encodeURIComponent(key)}`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({setting_value:value,updated_at:new Date().toISOString()})})}alert('Website settings saved.')}catch(x){alert(x.message)}});
+document.addEventListener('change',async e=>{const b=e.target.closest('[data-booking]');if(b)try{await api(`${tables.bookings}?id=eq.${encodeURIComponent(b.dataset.booking)}`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({status:b.value,updated_at:new Date().toISOString()})})}catch(x){alert(x.message)}});document.addEventListener('click',async e=>{const d=e.target.closest('[data-del-service]');if(d&&confirm('Delete this service?'))try{await api(`${tables.services}?id=eq.${encodeURIComponent(d.dataset.delService)}`,{method:'DELETE'});services();stats()}catch(x){alert(x.message)}const r=e.target.closest('[data-review]');if(r)try{await api(`${tables.testimonials}?id=eq.${encodeURIComponent(r.dataset.review)}`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({approved:true,active:true,updated_at:new Date().toISOString()})});reviews()}catch(x){alert(x.message)}});
+$('pricing-form')?.addEventListener('submit',async e=>{e.preventDefault();try{const id=$('pricing-id').value;const max=$('pricing-max-days').value.trim();const body={service_id:$('pricing-service').value,rate_type:$('pricing-rate-type').value,base_amount:Number($('pricing-amount').value),currency:$('pricing-currency').value.trim()||'KES',minimum_days:Math.max(1,Number($('pricing-min-days').value)||1),maximum_days:max?Math.max(1,Number(max)):null,location_rule:$('pricing-location').value.trim()||'*',job_type_rule:$('pricing-job-type').value.trim()||'*',priority:Math.max(0,Number($('pricing-priority').value)||0),active:$('pricing-active').checked,notes:$('pricing-notes').value.trim()||null,updated_at:new Date().toISOString()};await api(id?`${tables.servicePricing||'service_pricing'}?id=eq.${encodeURIComponent(id)}`:(tables.servicePricing||'service_pricing'),{method:id?'PATCH':'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(body)});e.target.reset();$('pricing-id').value='';$('pricing-min-days').value='1';$('pricing-priority').value='0';$('pricing-currency').value='KES';$('pricing-active').checked=true;e.target.classList.add('hidden');pricing();alert('Pricing rule saved.')}catch(x){alert(x.message)}});
+document.addEventListener('click',async e=>{const ep=e.target.closest('[data-edit-pricing]');if(ep)await editPricing(ep.dataset.editPricing);const dp=e.target.closest('[data-del-pricing]');if(dp&&confirm('Delete this pricing rule?'))try{await api(`${tables.servicePricing||'service_pricing'}?id=eq.${encodeURIComponent(dp.dataset.delPricing)}`,{method:'DELETE'});pricing()}catch(x){alert(x.message)}const es=e.target.closest('[data-edit-service]');if(es)try{const r=await api(`${tables.services}?id=eq.${encodeURIComponent(es.dataset.editService)}&select=*&limit=1`);const x=r[0];if(x){$('service-id').value=x.id;$('service-name').value=x.name||'';$('service-description').value=x.description||'';$('service-icon').value=x.icon||'';$('service-active').checked=!!x.active;$('service-form').classList.remove('hidden');$('service-form').scrollIntoView({behavior:'smooth',block:'start'})}}catch(x){alert(x.message)}});
+$('create-version')?.addEventListener('click',async()=>{try{await api(tables.siteVersions||'site_versions',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({change_type:'manual_snapshot',summary:'Manual website settings snapshot',snapshot:{hero_background_url:$('setting-hero').value,contact_email:$('setting-email').value,whatsapp_number:$('setting-whatsapp').value}})});alert('Version saved.');versions()}catch(x){alert(x.message)}});
+if(location.hash==='#admin')enter();window.addEventListener('hashchange',()=>location.hash==='#admin'?enter():exit());window.TaskMtaaniAdmin={enter,enterAuthenticated,exit,adminSignOut,panel,api};
+})();
+</script>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+const getApi=()=>window.TaskMtaaniAdmin?.api;
+function showMessage(text,ok=true){const el=$('provider-applications-message');if(!el)return;el.textContent=text;el.className='mb-4 rounded-lg p-3 text-sm '+(ok?'bg-emerald-50 text-emerald-700':'bg-red-50 text-red-700');}
+async function loadApplications(){const body=$('provider-applications-table');const api=getApi();if(!body||!api)return;try{const rows=await api('provider_applications?select=*&order=created_at.desc&limit=200');body.innerHTML=rows.length?rows.map(x=>`<tr><td><div class="font-semibold">${esc(x.full_name)}</div><div class="text-xs text-gray-500">${esc(x.phone)}</div></td><td>${esc(x.profession)}</td><td>${esc(x.experience_years??0)} yrs</td><td>${esc(x.service_area)}</td><td><span class="admin-badge ${x.status==='approved'?'admin-badge-green':x.status==='rejected'?'admin-badge-gray':'admin-badge-yellow'}">${esc(x.status)}</span></td><td>${esc(new Date(x.created_at).toLocaleString())}</td><td class="space-x-2">${x.status==='pending'||x.status==='in_review'?`<button class="text-emerald-700 font-semibold" data-approve-application="${esc(x.id)}">Approve</button><button class="text-red-600 font-semibold" data-reject-application="${esc(x.id)}">Reject</button>`:'—'}</td></tr>`).join(''):'<tr><td colspan="7">No provider applications found.</td></tr>';}catch(e){body.innerHTML=`<tr><td colspan="7" class="text-red-600">${esc(e.message)}</td></tr>`;}}
+document.querySelectorAll('.admin-nav-btn').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.adminPanel==='provider-applications')setTimeout(loadApplications,50);}));
+$('provider-applications-refresh')?.addEventListener('click',loadApplications);
+document.addEventListener('click',async e=>{const approve=e.target.closest('[data-approve-application]');const reject=e.target.closest('[data-reject-application]');const api=getApi();if(approve&&api){if(!confirm('Approve this application and create/link the provider profile?'))return;try{await api('rpc/approve_provider_application',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify({p_application_id:approve.dataset.approveApplication})});showMessage('Application approved. The provider profile was created/linked. Complete verification and activation from Helpers.',true);loadApplications();}catch(err){showMessage(err.message,false);}}if(reject&&api){if(!confirm('Reject this provider application?'))return;try{await api('rpc/reject_provider_application',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify({p_application_id:reject.dataset.rejectApplication})});showMessage('Application rejected.',true);loadApplications();}catch(err){showMessage(err.message,false);}}});
+window.TaskMtaaniProviderApplications={load:loadApplications};
+})();
+</script>
+<div id="admin-login-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/70 p-4">
+  <div class="w-full max-w-md rounded-2xl bg-white shadow-2xl p-6">
+    <div class="flex items-center gap-3 mb-5"><div class="w-11 h-11 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700"><i class="fa-solid fa-shield-halved"></i></div><div><h2 class="text-xl font-bold text-gray-900">TaskMtaani Admin Login</h2><p class="text-sm text-gray-500">Authorized administrators only.</p></div></div>
+    <form id="admin-login-form" class="space-y-4">
+      <input id="admin-login-email" type="email" required autocomplete="email" placeholder="Admin email" class="admin-input w-full">
+      <input id="admin-login-password" type="password" required autocomplete="current-password" placeholder="Password" class="admin-input w-full">
+      <div class="text-right -mt-2"><button id="admin-forgot-password" type="button" class="text-sm text-emerald-700 hover:underline font-semibold">Forgot password?</button></div>
+      <div id="admin-login-error" class="hidden rounded-lg bg-red-50 text-red-700 text-sm p-3"></div>
+      <button class="w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white py-3 font-semibold" type="submit">Sign in</button>
+    </form>
+    <button id="admin-login-cancel" class="w-full mt-3 py-2 text-sm text-gray-500 hover:text-gray-900">Cancel</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const modal=document.getElementById('admin-login-modal'), form=document.getElementById('admin-login-form'), err=document.getElementById('admin-login-error');
+  const cfg=()=>({url:(window.TASKMTAANI_SUPABASE_URL||'').replace(/\/$/,''),key:window.TASKMTAANI_SUPABASE_ANON_KEY||''});
+  const show=()=>{modal?.classList.remove('hidden');modal?.classList.add('flex');setTimeout(()=>document.getElementById('admin-login-email')?.focus(),50)};
+  const hide=()=>{modal?.classList.add('hidden');modal?.classList.remove('flex')};
+  async function signIn(email,password){
+    const c=cfg(); if(!c.url||c.url.startsWith('YOUR_')||!c.key||c.key.startsWith('YOUR_')) throw Error('Supabase URL and anon/publishable key have not been configured.');
+    const r=await fetch(c.url+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:c.key,'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+    const data=await r.json(); if(!r.ok) throw Error(data.error_description||data.msg||'Sign-in failed.');
+    localStorage.setItem('taskmtaani_access_token',data.access_token); localStorage.setItem('taskmtaani_refresh_token',data.refresh_token||'');
+    return data;
+  }
+  async function profile(token){
+    const c=cfg();
+    const u=await fetch(c.url+'/auth/v1/user',{headers:{apikey:c.key,Authorization:'Bearer '+token}});
+    const user=await u.json();
+    if(!u.ok||!user.id) throw Error('Your admin session has expired. Please sign in again.');
+    const r=await fetch(c.url+'/rest/v1/profiles?select=id,full_name,role&id=eq.'+encodeURIComponent(user.id)+'&limit=1',{headers:{apikey:c.key,Authorization:'Bearer '+token}});
+    const data=await r.json();
+    if(!r.ok) throw Error(data.message||'Could not verify administrator profile.');
+    if(!data[0]||data[0].role!=='admin') throw Error('This account is not assigned the admin role.');
+    return data[0];
+  }
+  async function tryExisting(){const token=localStorage.getItem('taskmtaani_access_token');if(!token)return false;try{await profile(token);window.TASKMTAANI_ADMIN_TOKEN=token;return true}catch(e){localStorage.removeItem('taskmtaani_access_token');localStorage.removeItem('taskmtaani_refresh_token');return false}}
+  form?.addEventListener('submit',async e=>{e.preventDefault();err.classList.add('hidden');try{const d=await signIn(document.getElementById('admin-login-email').value.trim(),document.getElementById('admin-login-password').value);await profile(d.access_token);window.TASKMTAANI_ADMIN_TOKEN=d.access_token;hide();window.TaskMtaaniAdmin?.enterAuthenticated?.()}catch(e){err.textContent=e.message;err.classList.remove('hidden')}});
+  document.getElementById('admin-login-cancel')?.addEventListener('click',()=>{hide();if(location.hash==='#admin')history.replaceState(null,'',location.pathname+location.search)});document.getElementById('admin-forgot-password')?.addEventListener('click',()=>window.TaskMtaaniPasswordReset?.open(document.getElementById('admin-login-email')?.value.trim()));
+  window.TaskMtaaniAuth={show,hide,tryExisting,profile,signOut:()=>{localStorage.removeItem('taskmtaani_access_token');localStorage.removeItem('taskmtaani_refresh_token');window.TASKMTAANI_ADMIN_TOKEN=null;hide();window.TaskMtaaniAdmin?.exit?.()}};
+})();
+</script>
+<div id="password-reset-modal" class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-950/70 p-4">
+  <div class="w-full max-w-md rounded-2xl bg-white shadow-2xl p-6">
+    <div class="flex items-center justify-between mb-5"><div><p class="text-sm text-emerald-600 font-semibold">TASKMTAANI</p><h2 class="text-2xl font-bold text-gray-900">Reset Password</h2><p id="password-reset-subtitle" class="text-sm text-gray-500 mt-1">Enter the email used to register your account.</p></div><button id="password-reset-close" type="button" class="text-gray-500 text-xl" aria-label="Close">&times;</button></div>
+    <form id="password-reset-request-form" class="space-y-4">
+      <input id="password-reset-email" type="email" required autocomplete="email" placeholder="Email address" class="admin-input w-full">
+      <div id="password-reset-request-message" class="hidden rounded-lg text-sm p-3"></div>
+      <button id="password-reset-request-submit" class="w-full py-3 rounded-lg bg-emerald-600 text-white font-semibold" type="submit">Send reset email</button>
+    </form>
+    <form id="password-reset-new-form" class="space-y-4 hidden">
+      <input id="password-reset-new-password" type="password" minlength="6" required autocomplete="new-password" placeholder="New password (at least 6 characters)" class="admin-input w-full">
+      <input id="password-reset-confirm-password" type="password" minlength="6" required autocomplete="new-password" placeholder="Confirm new password" class="admin-input w-full">
+      <div id="password-reset-new-message" class="hidden rounded-lg text-sm p-3"></div>
+      <button id="password-reset-new-submit" class="w-full py-3 rounded-lg bg-emerald-600 text-white font-semibold" type="submit">Set new password</button>
+    </form>
+  </div>
+</div>
+
+<div id="customer-auth-modal" class="fixed inset-0 z-[120] hidden items-center justify-center bg-slate-950/70 p-4 account-modal">
+  <div class="w-full max-w-md rounded-2xl bg-white shadow-2xl p-6">
+    <div class="flex items-center justify-between mb-5"><div><p class="text-sm text-emerald-600 font-semibold">TASKMTAANI</p><h2 id="customer-auth-title" class="text-2xl font-bold">Choose your account</h2><p id="auth-role-subtitle" class="text-sm text-gray-500 mt-1">Select how you want to use TaskMtaani.</p></div><button id="customer-auth-close" type="button" class="text-gray-500 text-xl" aria-label="Close">&times;</button></div>
+    <div class="flex gap-2 mb-5">
+      <button id="auth-role-customer" type="button" class="flex-1 py-2 rounded-lg bg-emerald-600 text-white font-semibold"><i class="fa-solid fa-user mr-1"></i> Customer</button>
+      <button id="auth-role-helper" type="button" class="flex-1 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold"><i class="fa-solid fa-briefcase mr-1"></i> Helper</button>
+      <button id="auth-role-admin" type="button" class="flex-1 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold"><i class="fa-solid fa-shield-halved mr-1"></i> Admin</button>
+    </div>
+    <div id="auth-customer-helper-area">
+      <div class="flex gap-2 mb-5"><button id="auth-login-tab" type="button" class="flex-1 py-2 rounded-lg bg-emerald-600 text-white font-semibold">Sign in</button><button id="auth-register-tab" type="button" class="flex-1 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold">Register</button></div>
+      <form id="customer-login-form" class="space-y-4"><input id="customer-login-email" type="email" required autocomplete="email" placeholder="Email address" class="admin-input"><input id="customer-login-password" type="password" required autocomplete="current-password" placeholder="Password" class="admin-input"><div class="text-right -mt-2"><button id="customer-forgot-password" type="button" class="text-sm text-emerald-700 hover:underline font-semibold">Forgot password?</button></div><button id="customer-login-submit" class="w-full py-3 rounded-lg bg-emerald-600 text-white font-semibold" type="submit">Sign in</button></form>
+      <form id="customer-register-form" class="space-y-4 hidden"><input id="customer-register-name" required placeholder="Full name" class="admin-input"><input id="customer-register-email" type="email" required autocomplete="email" placeholder="Email address" class="admin-input"><input id="customer-register-phone" type="tel" autocomplete="tel" placeholder="Phone number" class="admin-input"><input id="customer-register-password" type="password" minlength="6" required autocomplete="new-password" placeholder="Password (at least 6 characters)" class="admin-input"><button id="customer-register-submit" class="w-full py-3 rounded-lg bg-emerald-600 text-white font-semibold" type="submit">Create account</button></form>
+    </div>
+    <div id="auth-admin-area" class="hidden">
+      <div class="rounded-lg bg-slate-50 border border-slate-200 p-3 mb-4 text-sm text-gray-600"><i class="fa-solid fa-lock mr-1"></i> Administrator access is restricted to approved TaskMtaani administrators.</div>
+      <button id="auth-admin-continue" type="button" class="w-full py-3 rounded-lg bg-gray-900 text-white font-semibold">Continue to Admin Login</button>
+    </div>
+    <div id="customer-auth-message" class="hidden mt-4 rounded-lg p-3 text-sm"></div>
+  </div>
+</div>
+<script>
+(function(){
+ const $=id=>document.getElementById(id), modal=$('customer-auth-modal');
+ const cfg=()=>({url:(window.TASKMTAANI_SUPABASE_URL||'').replace(/\/$/,''),key:window.TASKMTAANI_SUPABASE_ANON_KEY||''});
+ const getToken=()=>localStorage.getItem('taskmtaani_access_token');
+ const headers=token=>({apikey:cfg().key,Authorization:'Bearer '+(token||cfg().key),'Content-Type':'application/json'});
+ let selectedRole='customer';
+ function msg(text,error=false){const el=$('customer-auth-message');el.textContent=text;el.className='mt-4 rounded-lg p-3 text-sm '+(error?'bg-red-50 text-red-700':'bg-emerald-50 text-emerald-700');el.classList.remove('hidden')}
+ function clearMsg(){$('customer-auth-message').classList.add('hidden')}
+ function openAuth(register=false,role='customer'){modal.classList.remove('hidden');modal.classList.add('flex');selectRole(role);showTab(register?'register':'login');}
+ function closeAuth(){modal.classList.add('hidden');modal.classList.remove('flex');clearMsg()}
+ function selectRole(role){selectedRole=role;const admin=role==='admin',helper=role==='helper';$('auth-role-customer').className='flex-1 py-2 rounded-lg font-semibold '+(!admin&&!helper?'bg-emerald-600 text-white':'bg-gray-100 text-gray-700');$('auth-role-helper').className='flex-1 py-2 rounded-lg font-semibold '+(helper?'bg-sky-600 text-white':'bg-gray-100 text-gray-700');$('auth-role-admin').className='flex-1 py-2 rounded-lg font-semibold '+(admin?'bg-gray-900 text-white':'bg-gray-100 text-gray-700');$('customer-auth-title').textContent=admin?'Admin Account':helper?'Helper Account':'Customer Account';$('auth-role-subtitle').textContent=admin?'Manage TaskMtaani services, helpers, bookings and pricing.':helper?'Join TaskMtaani as a helper and manage your helper profile.':'Book trusted helpers and manage your bookings.';$('auth-customer-helper-area').classList.toggle('hidden',admin);$('auth-admin-area').classList.toggle('hidden',!admin);clearMsg();if(!admin)showTab('login')}
+ function showTab(tab){if(selectedRole==='admin')return;const reg=tab==='register';$('customer-login-form').classList.toggle('hidden',reg);$('customer-register-form').classList.toggle('hidden',!reg);$('auth-login-tab').className='flex-1 py-2 rounded-lg font-semibold '+(!reg?'bg-emerald-600 text-white':'bg-gray-100 text-gray-700');$('auth-register-tab').className='flex-1 py-2 rounded-lg font-semibold '+(reg?'bg-emerald-600 text-white':'bg-gray-100 text-gray-700');clearMsg()}
+ async function signIn(email,password){const c=cfg();if(!c.url||c.url.startsWith('YOUR_')||!c.key||c.key.startsWith('YOUR_'))throw Error('Configure your Supabase URL and anon/publishable key first.');const r=await fetch(c.url+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:c.key,'Content-Type':'application/json'},body:JSON.stringify({email,password})});const d=await r.json();if(!r.ok)throw Error(d.error_description||d.msg||'Sign-in failed.');localStorage.setItem('taskmtaani_access_token',d.access_token);localStorage.setItem('taskmtaani_refresh_token',d.refresh_token||'');return d}
+ async function register(name,email,phone,password){const c=cfg();if(!c.url||c.url.startsWith('YOUR_')||!c.key||c.key.startsWith('YOUR_'))throw Error('Configure your Supabase URL and anon/publishable key first.');const r=await fetch(c.url+'/auth/v1/signup',{method:'POST',headers:{apikey:c.key,'Content-Type':'application/json'},body:JSON.stringify({email,password,data:{full_name:name,phone,whatsapp:phone}})});const d=await r.json();if(!r.ok)throw Error(d.msg||d.error_description||'Registration failed.');if(d.access_token){localStorage.setItem('taskmtaani_access_token',d.access_token);localStorage.setItem('taskmtaani_refresh_token',d.refresh_token||'');return true}msg('Account created. Check your email to confirm your account, then sign in.');return false}
+ async function loadProfile(token){const c=cfg();const u=await (await fetch(c.url+'/auth/v1/user',{headers:{apikey:c.key,Authorization:'Bearer '+token}})).json();if(!u.id)throw Error('Your session has expired. Please sign in again.');const r=await fetch(c.url+'/rest/v1/profiles?select=id,full_name,phone,whatsapp,role&id=eq.'+encodeURIComponent(u.id)+'&limit=1',{headers:headers(token)});const d=await r.json();if(!r.ok||!d[0])throw Error('Could not load your profile.');return d[0]}
+ async function loadBookings(token){const c=cfg();const r=await fetch(c.url+'/rest/v1/bookings?select=service_name,preferred_date,location,status,created_at&order=created_at.desc',{headers:headers(token)});const d=await r.json();const body=$('customer-bookings-table');if(!r.ok){body.innerHTML='<tr><td colspan="5" class="text-red-600">Unable to load bookings.</td></tr>';return}body.innerHTML=d.length?d.map(x=>`<tr><td>${escapeHtml(x.service_name)}</td><td>${escapeHtml(x.preferred_date)}</td><td>${escapeHtml(x.location)}</td><td><span class="admin-badge admin-badge-green">${escapeHtml(x.status)}</span></td><td>${escapeHtml(new Date(x.created_at).toLocaleString())}</td></tr>`).join(''):'<tr><td colspan="5">No bookings yet.</td></tr>'}
+ function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+ async function refresh(){const token=getToken();const guest=$('account-guest'),profileCard=$('account-profile-card'),bookingsCard=$('account-bookings-card'),signout=$('account-signout');if(!token){guest.classList.remove('hidden');profileCard.classList.add('hidden');bookingsCard.classList.add('hidden');signout.classList.add('hidden');$('account-nav-label').textContent='Login';$('account-mobile-label').textContent='Login';return}try{const p=await loadProfile(token);guest.classList.add('hidden');profileCard.classList.remove('hidden');bookingsCard.classList.remove('hidden');signout.classList.remove('hidden');$('customer-profile-name').value=p.full_name||'';$('customer-profile-phone').value=p.phone||'';$('customer-profile-whatsapp').value=p.whatsapp||'';$('account-welcome').textContent='Welcome, '+(p.full_name||'Customer')+'.';$('account-nav-label').textContent='Login';$('account-mobile-label').textContent='Login';await loadBookings(token)}catch(e){localStorage.removeItem('taskmtaani_access_token');localStorage.removeItem('taskmtaani_refresh_token');refresh()}}
+ function showAccount(){document.querySelectorAll('.account-panel').forEach(x=>x.classList.remove('active'));$('account-area').classList.add('active');$('account-area').scrollIntoView({behavior:'smooth',block:'start'});refresh()}
+ function openHelper(){closeAuth();if(window.TaskMtaaniProvider?.open)window.TaskMtaaniProvider.open();else $('provider-nav-btn')?.click()}
+ $('account-nav-btn')?.addEventListener('click',()=>openAuth(false,'customer'));$('account-mobile-btn')?.addEventListener('click',()=>{document.getElementById('mobile-menu')?.classList.add('hidden');openAuth(false,'customer')});$('account-guest-btn')?.addEventListener('click',()=>openAuth(false,'customer'));$('customer-auth-close')?.addEventListener('click',closeAuth);$('auth-role-customer')?.addEventListener('click',()=>selectRole('customer'));$('auth-role-helper')?.addEventListener('click',()=>{selectRole('helper');showTab('login')});$('auth-role-admin')?.addEventListener('click',()=>selectRole('admin'));$('auth-admin-continue')?.addEventListener('click',()=>{closeAuth();document.getElementById('admin-login-modal')?.classList.remove('hidden');document.getElementById('admin-login-modal')?.classList.add('flex');document.getElementById('admin-login-email')?.focus()});$('auth-login-tab')?.addEventListener('click',()=>showTab('login'));$('auth-register-tab')?.addEventListener('click',()=>showTab('register'));$('customer-forgot-password')?.addEventListener('click',()=>window.TaskMtaaniPasswordReset?.open($('customer-login-email').value.trim()));$('account-signout')?.addEventListener('click',()=>{localStorage.removeItem('taskmtaani_access_token');localStorage.removeItem('taskmtaani_refresh_token');refresh();showAccount()});$('account-refresh-bookings')?.addEventListener('click',()=>{const t=getToken();if(t)loadBookings(t)});
+ $('customer-login-form')?.addEventListener('submit',async e=>{e.preventDefault();try{await signIn($('customer-login-email').value.trim(),$('customer-login-password').value);closeAuth();if(selectedRole==='helper')openHelper();else showAccount()}catch(x){msg(x.message,true)}});
+ $('customer-register-form')?.addEventListener('submit',async e=>{e.preventDefault();try{const ok=await register($('customer-register-name').value.trim(),$('customer-register-email').value.trim(),$('customer-register-phone').value.trim(),$('customer-register-password').value);if(ok){closeAuth();if(selectedRole==='helper')openHelper();else showAccount()}}catch(x){msg(x.message,true)}});
+ $('customer-profile-form')?.addEventListener('submit',async e=>{e.preventDefault();const token=getToken();if(!token)return;try{const c=cfg();const u=await (await fetch(c.url+'/auth/v1/user',{headers:{apikey:c.key,Authorization:'Bearer '+token}})).json();const r=await fetch(c.url+'/rest/v1/profiles?id=eq.'+encodeURIComponent(u.id),{method:'PATCH',headers:{...headers(token),Prefer:'return=minimal'},body:JSON.stringify({full_name:$('customer-profile-name').value.trim(),phone:$('customer-profile-phone').value.trim(),whatsapp:$('customer-profile-whatsapp').value.trim()})});if(!r.ok)throw Error(await r.text());$('account-welcome').textContent='Profile saved.'}catch(x){alert(x.message)}});
+ window.TaskMtaaniCustomer={openAuth,showAccount,refresh,openHelper,signOut:()=>{$('account-signout')?.click()}};
+ if(location.hash==='#account')showAccount(); if(getToken())refresh();
+})();
+</script>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const cfg=()=>({url:(window.TASKMTAANI_SUPABASE_URL||'').replace(/\/$/,''),key:window.TASKMTAANI_SUPABASE_ANON_KEY||''});
+  const modal=$('password-reset-modal'), requestForm=$('password-reset-request-form'), newForm=$('password-reset-new-form'), reqMsg=$('password-reset-request-message'), newMsg=$('password-reset-new-message'), subtitle=$('password-reset-subtitle');
+  let recoveryToken='';
+  function showBox(el,text,ok){el.textContent=text;el.className='rounded-lg text-sm p-3 '+(ok?'bg-emerald-50 text-emerald-700':'bg-red-50 text-red-700');el.classList.remove('hidden')}
+  function hideBox(el){el.classList.add('hidden');el.textContent=''}
+  function show(){modal?.classList.remove('hidden');modal?.classList.add('flex');$('password-reset-email')?.focus()}
+  function hide(){modal?.classList.add('hidden');modal?.classList.remove('flex');recoveryToken='';}
+  function openRequest(email){show();requestForm?.classList.remove('hidden');newForm?.classList.add('hidden');subtitle.textContent='Enter the email used to register your account.';hideBox(reqMsg);hideBox(newMsg);if(email)$('password-reset-email').value=email}
+  async function sendReset(email){const c=cfg();if(!c.url||c.url.startsWith('YOUR_')||!c.key||c.key.startsWith('YOUR_'))throw Error('Configure your Supabase URL and anon/publishable key first.');const redirectTo=window.location.origin+window.location.pathname;const r=await fetch(c.url+'/auth/v1/recover',{method:'POST',headers:{apikey:c.key,'Content-Type':'application/json'},body:JSON.stringify({email,redirect_to:redirectTo})});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.msg||d.error_description||'Unable to send the password reset email.');}
+  async function setPassword(password){const c=cfg();if(!recoveryToken)throw Error('Your password reset link is missing or has expired. Please request a new one.');const r=await fetch(c.url+'/auth/v1/user',{method:'PUT',headers:{apikey:c.key,Authorization:'Bearer '+recoveryToken,'Content-Type':'application/json'},body:JSON.stringify({password})});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.msg||d.error_description||'Unable to update your password.');}
+  requestForm?.addEventListener('submit',async e=>{e.preventDefault();hideBox(reqMsg);const email=$('password-reset-email').value.trim();try{await sendReset(email);showBox(reqMsg,'If an account uses this email, a secure password reset email has been sent. Check your inbox and spam folder.',true)}catch(x){showBox(reqMsg,x.message,false)}});
+  newForm?.addEventListener('submit',async e=>{e.preventDefault();hideBox(newMsg);const p=$('password-reset-new-password').value,c=$('password-reset-confirm-password').value;if(p!==c){showBox(newMsg,'The passwords do not match.',false);return}try{await setPassword(p);localStorage.removeItem('taskmtaani_access_token');localStorage.removeItem('taskmtaani_refresh_token');showBox(newMsg,'Password changed successfully. You can now sign in with your new password.',true);newForm.reset();setTimeout(()=>{hide();if(location.hash==='#reset-password')history.replaceState(null,'',location.pathname+location.search);document.getElementById('customer-auth-modal')?.classList.remove('hidden');document.getElementById('customer-auth-modal')?.classList.add('flex')},900)}catch(x){showBox(newMsg,x.message,false)}});
+  $('password-reset-close')?.addEventListener('click',hide);
+  window.TaskMtaaniPasswordReset={open:openRequest,hide};
+  function inspectRecovery(){const raw=window.location.hash.startsWith('#')?window.location.hash.slice(1):'';const params=new URLSearchParams(raw);const type=params.get('type');const token=params.get('access_token');if(type==='recovery'&&token){recoveryToken=token;show();requestForm.classList.add('hidden');newForm.classList.remove('hidden');subtitle.textContent='Choose a new password for your TaskMtaani account.';hideBox(reqMsg);hideBox(newMsg);}
+  }
+  window.addEventListener('load',inspectRecovery);window.addEventListener('hashchange',inspectRecovery);
+})();
+</script>
+<script>
+(function(){
+  const $=id=>document.getElementById(id), cfg=()=>({url:(window.TASKMTAANI_SUPABASE_URL||'').replace(/\/$/,''),key:window.TASKMTAANI_SUPABASE_ANON_KEY||''});
+  const getToken=()=>localStorage.getItem('taskmtaani_access_token')||'';
+  const headers=t=>({apikey:cfg().key,Authorization:'Bearer '+t,'Content-Type':'application/json'});
+  const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  async function api(path,opt={}){const c=cfg(),t=getToken();if(!c.url||!c.key||c.url.startsWith('YOUR_')||c.key.startsWith('YOUR_'))throw Error('Configure your Supabase URL and anon/publishable key first.');const r=await fetch(c.url+path,{...opt,headers:{...headers(t),...(opt.headers||{})}});const text=await r.text();if(!r.ok)throw Error(text||('Request failed ('+r.status+')'));return text?JSON.parse(text):null}
+  async function user(){const c=cfg(),t=getToken();if(!t)return null;const r=await fetch(c.url+'/auth/v1/user',{headers:headers(t)});if(!r.ok)return null;return r.json()}
+  async function profile(u){const r=await api('/rest/v1/profiles?id=eq.'+encodeURIComponent(u.id)+'&select=id,full_name,phone,whatsapp,role');return r[0]||null}
+  async function providerFor(u){const r=await api('/rest/v1/providers?user_id=eq.'+encodeURIComponent(u.id)+'&select=*');return r[0]||null}
+  function openProvider(){document.querySelectorAll('.account-panel').forEach(x=>x.classList.remove('active'));$('provider-area').classList.add('active');$('provider-area').scrollIntoView({behavior:'smooth',block:'start'});refresh()}
+  async function loadServices(){try{const r=await api('/rest/v1/services?active=eq.true&select=id,name&order=name.asc');$('provider-rate-service').innerHTML='<option value="">Select service</option>'+r.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join('')}catch(e){}}
+  async function loadRates(p){try{const r=await api('/rest/v1/provider_services?provider_id=eq.'+encodeURIComponent(p.id)+'&select=id,service_id,rate_type,rate_amount,currency,active,services(name)&order=created_at.desc');$('provider-rates-table').innerHTML=r.length?r.map(x=>'<tr><td>'+esc(x.services?.name||x.service_id)+'</td><td>'+esc(x.rate_type)+'</td><td>'+esc(x.rate_amount)+' '+esc(x.currency||'KES')+'</td><td>'+ (x.active?'Yes':'No') +'</td><td><button type="button" data-provider-rate="'+esc(x.id)+'" class="text-red-600 font-semibold">Remove</button></td></tr>').join(''):'<tr><td colspan="5">No services yet.</td></tr>'}catch(e){$('provider-rates-table').innerHTML='<tr><td colspan="5" class="text-red-600">Unable to load rates.</td></tr>'}}
+  async function loadJobs(p){try{const r=await api('/rest/v1/bookings?provider_id=eq.'+encodeURIComponent(p.id)+'&select=id,service_name,preferred_date,preferred_time,location,customer_name,status&order=preferred_date.asc');$('provider-bookings-table').innerHTML=r.length?r.map(x=>'<tr><td>'+esc(x.service_name)+'</td><td>'+esc(x.preferred_date)+'</td><td>'+esc(x.preferred_time||'—')+'</td><td>'+esc(x.location)+'</td><td>'+esc(x.customer_name||'—')+'</td><td><span class="admin-badge admin-badge-green">'+esc(x.status)+'</span></td><td><select data-provider-booking="'+esc(x.id)+'" class="admin-input py-1"><option value="assigned" '+(x.status==='assigned'?'selected':'')+'>Assigned</option><option value="confirmed" '+(x.status==='confirmed'?'selected':'')+'>Confirmed</option><option value="completed" '+(x.status==='completed'?'selected':'')+'>Completed</option><option value="cancelled" '+(x.status==='cancelled'?'selected':'')+'>Cancelled</option></select></td></tr>').join(''):'<tr><td colspan="7">No assigned jobs yet.</td></tr>'}catch(e){$('provider-bookings-table').innerHTML='<tr><td colspan="7" class="text-red-600">Unable to load assigned jobs.</td></tr>'}}
+  function fill(p){$('provider-profile-name').value=p.full_name||'';$('provider-profile-phone').value=p.phone||'';$('provider-profile-whatsapp').value=p.whatsapp||'';$('provider-profile-profession').value=p.profession||'';$('provider-profile-experience').value=p.experience_years??'';$('provider-profile-area').value=p.service_area||'';$('provider-profile-availability').value=p.availability||'';$('provider-profile-photo').value=p.profile_photo_url||'';$('provider-profile-bio').value=p.bio||'';$('provider-verification-badge').textContent=p.verification_status||'pending';$('provider-verification-text').textContent=p.verification_status||'pending';$('provider-reference-text').textContent=p.reference_status||'pending';$('provider-active-text').textContent=p.active?'Active':'Inactive';$('provider-welcome').textContent='Welcome, '+(p.full_name||'Provider')+'.'}
+  async function refresh(){const guest=$('provider-guest'),app=$('provider-application-card'),dash=$('provider-dashboard'),out=$('provider-signout');guest.classList.remove('hidden');app.classList.add('hidden');dash.classList.add('hidden');out.classList.add('hidden');const u=await user();if(!u)return;out.classList.remove('hidden');const p=await profile(u);if(!p){return}if(p.role!=='provider'){guest.classList.add('hidden');app.classList.remove('hidden');await loadExistingApplication(u)}else{const prov=await providerFor(u);if(prov){guest.classList.add('hidden');dash.classList.remove('hidden');fill(prov);await loadServices();await loadRates(prov);await loadJobs(prov)}else{$('provider-application-message').textContent='Your provider role is active, but no provider profile is linked yet. Please contact an administrator.'}}
+  }
+  async function loadExistingApplication(u){try{const r=await api('/rest/v1/provider_applications?user_id=eq.'+encodeURIComponent(u.id)+'&select=*&order=created_at.desc&limit=1');const a=r[0];if(a){$('provider-application-status').textContent=a.status;['name','phone','profession','experience','area','availability','bio'].forEach(k=>{const id='provider-app-'+k;if($(id))$(id).value=a[k==='name'?'full_name':k==='phone'?'phone':k==='profession'?'profession':k==='experience'?'experience_years':k==='area'?'service_area':k==='availability'?'availability':'bio']??''});$('provider-application-message').textContent='Application status: '+a.status+'. Admin approval is required before you become an active provider.'}}catch(e){}
+  }
+  $('provider-nav-btn')?.addEventListener('click',()=>window.TaskMtaaniCustomer?.openAuth(false,'helper'));$('provider-mobile-btn')?.addEventListener('click',()=>{document.getElementById('mobile-menu')?.classList.add('hidden');window.TaskMtaaniCustomer?.openAuth(false,'helper')});$('provider-apply-btn')?.addEventListener('click',()=>{if(getToken())openProvider();else window.TaskMtaaniCustomer?.openAuth(false,'helper')});$('provider-signout')?.addEventListener('click',()=>{localStorage.removeItem('taskmtaani_access_token');localStorage.removeItem('taskmtaani_refresh_token');openProvider()});
+  $('provider-application-form')?.addEventListener('submit',async e=>{e.preventDefault();try{const u=await user();if(!u)throw Error('Please sign in first.');const payload={user_id:u.id,full_name:$('provider-app-name').value.trim(),phone:$('provider-app-phone').value.trim(),profession:$('provider-app-profession').value.trim(),experience_years:Number($('provider-app-experience').value)||0,service_area:$('provider-app-area').value.trim(),availability:$('provider-app-availability').value.trim(),bio:$('provider-app-bio').value.trim(),status:'pending'};await api('/rest/v1/provider_applications',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(payload)});$('provider-application-status').textContent='pending';$('provider-application-message').textContent='Application submitted. TaskMtaani will review your details.'}catch(e){alert(e.message)}});
+  $('provider-profile-form')?.addEventListener('submit',async e=>{e.preventDefault();try{const u=await user(),p=await providerFor(u);if(!p)throw Error('Provider profile not found.');const payload={full_name:$('provider-profile-name').value.trim(),phone:$('provider-profile-phone').value.trim(),whatsapp:$('provider-profile-whatsapp').value.trim(),profession:$('provider-profile-profession').value.trim(),experience_years:Number($('provider-profile-experience').value)||0,service_area:$('provider-profile-area').value.trim(),availability:$('provider-profile-availability').value.trim(),profile_photo_url:$('provider-profile-photo').value.trim(),bio:$('provider-profile-bio').value.trim(),updated_at:new Date().toISOString()};await api('/rest/v1/providers?id=eq.'+encodeURIComponent(p.id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify(payload)});$('provider-profile-message').textContent='Profile saved.';refresh()}catch(e){alert(e.message)}});
+  $('provider-rate-form')?.addEventListener('submit',async e=>{e.preventDefault();try{const u=await user(),p=await providerFor(u);if(!p)throw Error('Provider profile not found.');const service=$('provider-rate-service').value;if(!service)throw Error('Select a service.');await api('/rest/v1/provider_services?provider_id=eq.'+encodeURIComponent(p.id)+'&service_id=eq.'+encodeURIComponent(service)+'&rate_type=eq.'+encodeURIComponent($('provider-rate-type').value),{method:'DELETE'});await api('/rest/v1/provider_services',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({provider_id:p.id,service_id:service,rate_type:$('provider-rate-type').value,rate_amount:Number($('provider-rate-amount').value),currency:'KES',active:true})});$('provider-rate-amount').value='';loadRates(p)}catch(e){alert(e.message)}});
+  $('provider-refresh-services')?.addEventListener('click',async()=>{const u=await user();if(u){const p=await providerFor(u);if(p){await loadServices();await loadRates(p)}}});$('provider-refresh-bookings')?.addEventListener('click',async()=>{const u=await user();if(u){const p=await providerFor(u);if(p)loadJobs(p)}});
+  document.addEventListener('change',async e=>{const b=e.target.closest('[data-provider-booking]');if(b)try{await api('/rest/v1/bookings?id=eq.'+encodeURIComponent(b.dataset.providerBooking),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({status:b.value,updated_at:new Date().toISOString()})})}catch(x){alert(x.message)} });
+  document.addEventListener('click',async e=>{const b=e.target.closest('[data-provider-rate]');if(b)try{await api('/rest/v1/provider_services?id=eq.'+encodeURIComponent(b.dataset.providerRate),{method:'DELETE'});const u=await user(),p=await providerFor(u);if(p)loadRates(p)}catch(x){alert(x.message)}});
+  if(location.hash==='#provider')openProvider(); window.TaskMtaaniProvider={open:openProvider,refresh};
+})();
+</script>
+
+<!-- Item 19: Booking Notifications -->
+<section id="notifications-area" class="py-16 md:py-24 bg-white">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="flex items-center justify-between gap-4 mb-6"><div><p class="text-sm text-emerald-600 font-semibold">NOTIFICATIONS</p><h2 class="text-3xl font-bold">Booking Updates</h2><p class="text-gray-500 mt-1">See assignment and booking-status updates linked to your account.</p></div><button id="notifications-refresh" type="button" class="px-4 py-2 rounded-lg border font-semibold">Refresh</button></div>
+    <div id="notifications-list" class="space-y-3"><div class="p-5 rounded-xl bg-slate-50 text-gray-500">Sign in to view your booking notifications.</div></div>
+  </div>
+</section>
+
+<script id="item19-notifications-script">
+(function(){
+ const list=document.getElementById('notifications-list');
+ const refresh=document.getElementById('notifications-refresh');
+ function cfg(){return window.TASKMTAANI_SUPABASE_URL&&window.TASKMTAANI_SUPABASE_ANON_KEY}
+ async function load(){
+  if(!list||!cfg()){return;}
+  const token=localStorage.getItem('taskmtaani_access_token');
+  if(!token){list.innerHTML='<div class="p-5 rounded-xl bg-slate-50 text-gray-500">Sign in to view your booking notifications.</div>';return;}
+  try{const r=await fetch(cfg()+'/rest/v1/booking_notifications?select=id,title,message,notification_type,created_at,read_at&order=created_at.desc&limit=30',{headers:{apikey:window.TASKMTAANI_SUPABASE_ANON_KEY,Authorization:'Bearer '+token}}); if(!r.ok) throw new Error('notification request failed'); const rows=await r.json(); list.innerHTML=rows.length?rows.map(n=>`<article class="p-5 rounded-xl border ${n.read_at?'bg-white':'bg-emerald-50 border-emerald-200'}"><div class="flex justify-between gap-4"><h3 class="font-bold">${escapeHtml(n.title)}</h3><span class="text-xs text-gray-500">${new Date(n.created_at).toLocaleString()}</span></div><p class="text-gray-600 mt-1">${escapeHtml(n.message)}</p></article>`).join(''):'<div class="p-5 rounded-xl bg-slate-50 text-gray-500">No booking notifications yet.</div>'; }catch(e){list.innerHTML='<div class="p-5 rounded-xl bg-red-50 text-red-700">Notifications are temporarily unavailable.</div>';}}
+ function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+ refresh?.addEventListener('click',load); window.TaskMtaaniNotifications={refresh:load};
+})();
+</script>
+
+<!-- TaskMtaani Item 21: secure M-Pesa payment client -->
+<section id="mpesa-payment" class="max-w-4xl mx-auto px-4 py-8 hidden">
+  <div class="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
+    <div class="flex items-center justify-between gap-4 mb-4">
+      <div><h2 class="text-2xl font-bold">Pay with M-Pesa</h2><p class="text-slate-600 text-sm">A secure M-Pesa prompt will be sent to your phone.</p></div>
+      <span class="text-xs font-semibold px-3 py-1 rounded-full bg-green-100 text-green-700">M-Pesa</span>
+    </div>
+    <form id="mpesa-form" class="grid gap-4">
+      <input id="mpesa-booking-id" type="hidden">
+      <label class="grid gap-1"><span class="font-semibold">Booking ID</span><input id="mpesa-booking-display" class="border rounded-lg px-3 py-2 bg-slate-50" readonly></label>
+      <label class="grid gap-1"><span class="font-semibold">Amount (KES)</span><input id="mpesa-amount" type="number" min="1" step="1" required class="border rounded-lg px-3 py-2"></label>
+      <label class="grid gap-1"><span class="font-semibold">M-Pesa phone number</span><input id="mpesa-phone" type="tel" inputmode="numeric" placeholder="2547XXXXXXXX" required class="border rounded-lg px-3 py-2"></label>
+      <button class="bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg px-4 py-3" type="submit">Send M-Pesa Prompt</button>
+      <p id="mpesa-result" class="text-sm"></p>
+    </form>
+  </div>
+</section>
+<script>
+(function(){
+  const form=document.getElementById('mpesa-form'); if(!form) return;
+  const result=document.getElementById('mpesa-result');
+  form.addEventListener('submit',async e=>{
+    e.preventDefault(); result.textContent='Starting secure payment…';
+    const bookingId=document.getElementById('mpesa-booking-id').value.trim();
+    const amount=Number(document.getElementById('mpesa-amount').value);
+    const phone=document.getElementById('mpesa-phone').value.trim();
+    if(!bookingId || !Number.isFinite(amount) || amount<1 || !phone){result.textContent='Enter the booking, amount and M-Pesa phone number.';return;}
+    try{
+      const token=localStorage.getItem('taskmtaani_access_token')||'';
+      const r=await fetch('/api/mpesa/stk-push',{method:'POST',headers:{'Content-Type':'application/json',...(token?{'Authorization':'Bearer '+token}:{})},body:JSON.stringify({booking_id:bookingId,amount,phone})});
+      const data=await r.json().catch(()=>({}));
+      if(!r.ok) throw new Error(data.error||'Payment request failed');
+      result.textContent=data.message||'Check your phone and enter your M-Pesa PIN.';
+    }catch(err){result.textContent=err.message||'Unable to start payment.';}
+  });
+  window.TaskMtaaniMpesa={open:function(bookingId,amount,phone){
+    document.getElementById('mpesa-payment').classList.remove('hidden');
+    document.getElementById('mpesa-booking-id').value=bookingId||'';
+    document.getElementById('mpesa-booking-display').value=bookingId||'';
+    document.getElementById('mpesa-amount').value=amount||'';
+    document.getElementById('mpesa-phone').value=phone||'';
+    document.getElementById('mpesa-payment').scrollIntoView({behavior:'smooth'});
+  }};
+})();
+</script>
+
+<script>
+(function(){document.body.classList.add('taskmtaani-helper-page');function boot(){if(window.TaskMtaaniCustomer){const t=localStorage.getItem('taskmtaani_access_token');window.TaskMtaaniProvider?.refresh();if(!t)window.TaskMtaaniCustomer.openAuth(false,'helper');}}setTimeout(boot,50);})();
+</script>
+</body>
+</html>
