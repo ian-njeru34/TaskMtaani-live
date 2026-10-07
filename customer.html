@@ -946,7 +946,7 @@ window.TaskMtaaniProviderApplications={load:loadApplications};
     <div class="flex items-center gap-3 mb-5"><div class="w-11 h-11 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700"><i class="fa-solid fa-shield-halved"></i></div><div><h2 class="text-xl font-bold text-gray-900">TaskMtaani Admin Login</h2><p class="text-sm text-gray-500">Authorized administrators only.</p></div></div>
     <form id="admin-login-form" class="space-y-4">
       <input id="admin-login-email" type="email" required autocomplete="email" placeholder="Admin email" class="admin-input w-full">
-      <input id="admin-login-password" type="password" required autocomplete="current-password" placeholder="Password" class="admin-input w-full">
+      <div class="tm-password-wrap"><input id="admin-login-password" type="password" required autocomplete="current-password" placeholder="Password" class="admin-input w-full"><button type="button" class="tm-password-toggle" data-password-toggle="admin-login-password" aria-label="Show password" aria-pressed="false"><i class="fa-solid fa-eye"></i><span class="tm-password-toggle-label">Show</span></button></div>
       <div class="text-right -mt-2"><button id="admin-forgot-password" type="button" class="text-sm text-emerald-700 hover:underline font-semibold">Forgot password?</button></div>
       <div id="admin-login-error" class="hidden rounded-lg bg-red-50 text-red-700 text-sm p-3"></div>
       <button class="w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white py-3 font-semibold" type="submit">Sign in</button>
@@ -994,8 +994,8 @@ window.TaskMtaaniProviderApplications={load:loadApplications};
       <button id="password-reset-request-submit" class="w-full py-3 rounded-lg bg-emerald-600 text-white font-semibold" type="submit">Send reset email</button>
     </form>
     <form id="password-reset-new-form" class="space-y-4 hidden">
-      <input id="password-reset-new-password" type="password" minlength="6" required autocomplete="new-password" placeholder="New password (at least 6 characters)" class="admin-input w-full">
-      <input id="password-reset-confirm-password" type="password" minlength="6" required autocomplete="new-password" placeholder="Confirm new password" class="admin-input w-full">
+      <div class="tm-password-wrap"><input id="password-reset-new-password" type="password" minlength="6" required autocomplete="new-password" placeholder="New password (at least 6 characters)" class="admin-input w-full"><button type="button" class="tm-password-toggle" data-password-toggle="password-reset-new-password" aria-label="Show password" aria-pressed="false"><i class="fa-solid fa-eye"></i><span class="tm-password-toggle-label">Show</span></button></div>
+      <div class="tm-password-wrap"><input id="password-reset-confirm-password" type="password" minlength="6" required autocomplete="new-password" placeholder="Confirm new password" class="admin-input w-full"><button type="button" class="tm-password-toggle" data-password-toggle="password-reset-confirm-password" aria-label="Show password" aria-pressed="false"><i class="fa-solid fa-eye"></i><span class="tm-password-toggle-label">Show</span></button></div>
       <div id="password-reset-new-message" class="hidden rounded-lg text-sm p-3"></div>
       <button id="password-reset-new-submit" class="w-full py-3 rounded-lg bg-emerald-600 text-white font-semibold" type="submit">Set new password</button>
     </form>
@@ -1012,8 +1012,8 @@ window.TaskMtaaniProviderApplications={load:loadApplications};
     </div>
     <div id="auth-customer-helper-area">
       <div class="flex gap-2 mb-5"><button id="auth-login-tab" type="button" class="flex-1 py-2 rounded-lg bg-emerald-600 text-white font-semibold">Sign in</button><button id="auth-register-tab" type="button" class="flex-1 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold">Register</button></div>
-      <form id="customer-login-form" class="space-y-4"><input id="customer-login-email" type="email" required autocomplete="email" placeholder="Email address" class="admin-input"><input id="customer-login-password" type="password" required autocomplete="current-password" placeholder="Password" class="admin-input"><div class="text-right -mt-2"><button id="customer-forgot-password" type="button" class="text-sm text-emerald-700 hover:underline font-semibold">Forgot password?</button></div><button id="customer-login-submit" class="w-full py-3 rounded-lg bg-emerald-600 text-white font-semibold" type="submit">Sign in</button></form>
-      <form id="customer-register-form" class="space-y-4 hidden"><input id="customer-register-name" required placeholder="Full name" class="admin-input"><input id="customer-register-email" type="email" required autocomplete="email" placeholder="Email address" class="admin-input"><input id="customer-register-phone" type="tel" autocomplete="tel" placeholder="Phone number" class="admin-input"><input id="customer-register-password" type="password" minlength="6" required autocomplete="new-password" placeholder="Password (at least 6 characters)" class="admin-input"><button id="customer-register-submit" class="w-full py-3 rounded-lg bg-emerald-600 text-white font-semibold" type="submit">Create account</button></form>
+      <form id="customer-login-form" class="space-y-4"><input id="customer-login-email" type="email" required autocomplete="email" placeholder="Email address" class="admin-input"><div class="tm-password-wrap"><input id="customer-login-password" type="password" required autocomplete="current-password" placeholder="Password" class="admin-input"><button type="button" class="tm-password-toggle" data-password-toggle="customer-login-password" aria-label="Show password" aria-pressed="false"><i class="fa-solid fa-eye"></i><span class="tm-password-toggle-label">Show</span></button></div><div class="text-right -mt-2"><button id="customer-forgot-password" type="button" class="text-sm text-emerald-700 hover:underline font-semibold">Forgot password?</button></div><button id="customer-login-submit" class="w-full py-3 rounded-lg bg-emerald-600 text-white font-semibold" type="submit">Sign in</button></form>
+      <form id="customer-register-form" class="space-y-4 hidden"><input id="customer-register-name" required placeholder="Full name" class="admin-input"><input id="customer-register-email" type="email" required autocomplete="email" placeholder="Email address" class="admin-input"><input id="customer-register-phone" type="tel" autocomplete="tel" placeholder="Phone number" class="admin-input"><div class="tm-password-wrap"><input id="customer-register-password" type="password" minlength="6" required autocomplete="new-password" placeholder="Password (at least 6 characters)" class="admin-input"><button type="button" class="tm-password-toggle" data-password-toggle="customer-register-password" aria-label="Show password" aria-pressed="false"><i class="fa-solid fa-eye"></i><span class="tm-password-toggle-label">Show</span></button></div><button id="customer-register-submit" class="w-full py-3 rounded-lg bg-emerald-600 text-white font-semibold" type="submit">Create account</button></form>
     </div>
     <div id="auth-admin-area" class="hidden">
       <div class="rounded-lg bg-slate-50 border border-slate-200 p-3 mb-4 text-sm text-gray-600"><i class="fa-solid fa-lock mr-1"></i> Administrator access is restricted to approved TaskMtaani administrators.</div>
@@ -1197,5 +1197,39 @@ window.TaskMtaaniProviderApplications={load:loadApplications};
 <script>
 (function(){document.body.classList.add('taskmtaani-customer-page');function boot(){if(window.TaskMtaaniCustomer){const t=localStorage.getItem('taskmtaani_access_token');window.TaskMtaaniCustomer.refresh();if(!t)window.TaskMtaaniCustomer.openAuth(false,'customer');}}setTimeout(boot,50);})();
 </script>
+
+<style id="taskmtaani-password-visibility">
+.tm-password-wrap{position:relative;width:100%;display:block}
+.tm-password-wrap>input{padding-right:5.75rem!important}
+.tm-password-toggle{position:absolute;right:.45rem;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;gap:.3rem;border:0;background:transparent;color:#047857;font-size:.78rem;font-weight:700;cursor:pointer;padding:.35rem .45rem;border-radius:.45rem;line-height:1}
+.tm-password-toggle:hover{background:#ecfdf5}
+.tm-password-toggle:focus-visible{outline:2px solid #10b981;outline-offset:2px}
+.tm-password-toggle i{font-size:.8rem}
+@media(max-width:420px){.tm-password-toggle-label{display:none}.tm-password-wrap>input{padding-right:2.8rem!important}}
+</style>
+<script id="taskmtaani-password-visibility-script">
+(function(){
+  function setupPasswordToggles(){
+    document.querySelectorAll('[data-password-toggle]').forEach(function(btn){
+      if(btn.dataset.tmReady==='1') return;
+      btn.dataset.tmReady='1';
+      btn.addEventListener('click',function(){
+        var input=document.getElementById(btn.getAttribute('data-password-toggle'));
+        if(!input) return;
+        var showing=input.type==='text';
+        input.type=showing?'password':'text';
+        btn.setAttribute('aria-pressed',String(!showing));
+        btn.setAttribute('aria-label',showing?'Show password':'Hide password');
+        var icon=btn.querySelector('i');
+        if(icon){icon.className=showing?'fa-solid fa-eye':'fa-solid fa-eye-slash';}
+        var label=btn.querySelector('.tm-password-toggle-label');
+        if(label) label.textContent=showing?'Show':'Hide';
+      });
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',setupPasswordToggles); else setupPasswordToggles();
+})();
+</script>
+<!-- TaskMtaani password visibility -->
 </body>
 </html>
