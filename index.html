@@ -71,11 +71,14 @@ body.admin-mode #admin-dashboard{display:block}
         .whatsapp-green:hover {
             background-color: #1ebe5d;
         }
-        .hero-bg {
-            background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), var(--taskmtaani-hero-image, url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'));
-            background-size: cover;
-            background-position: center;
-        }
+        .hero-bg { position:relative; isolation:isolate; overflow:hidden; background:#10231e; }
+        .hero-slideshow { position:absolute; inset:0; z-index:0; overflow:hidden; background:#10231e; }
+        .hero-slideshow::after { content:""; position:absolute; inset:0; background:linear-gradient(rgba(0,0,0,.56),rgba(0,0,0,.62)); z-index:3; pointer-events:none; }
+        .hero-slide { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; transform:translateX(100%); transition:transform .85s cubic-bezier(.22,.61,.36,1); will-change:transform; }
+        .hero-slide.is-active { transform:translateX(0); }
+        .hero-slide.is-leaving { transform:translateX(-100%); }
+        #hero-section > .container { position:relative; z-index:4; }
+        @media (prefers-reduced-motion: reduce) { .hero-slide { transition:none; } }
         .service-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
@@ -104,7 +107,12 @@ body.admin-mode #admin-dashboard{display:block}
       source: "supabase",
       table: "site_settings",
       key: "hero_background_url",
-      fallback: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+      fallback: "assets/hero-house-cleaning.png",
+      defaultSlides: [
+        { title: "House cleaning", url: "assets/hero-house-cleaning.png" },
+        { title: "Outdoor home cooking", url: "assets/hero-outdoor-cook.png" }
+      ],
+      intervalMs: 4000
     },
     tables: {
       customers: "customers",
@@ -210,6 +218,7 @@ body.admin-mode #admin-dashboard{display:block}
 
     <!-- Hero Section -->
     <section id="hero-section" class="hero-bg text-white">
+        <div class="hero-slideshow" id="hero-slideshow" aria-hidden="true"></div>
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 text-center">
             <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-4">
                 Your Trusted Partner for <br class="hidden md:block"> Everyday Tasks in Kenya
@@ -656,38 +665,56 @@ body.admin-mode #admin-dashboard{display:block}
             });
         });
 
-        // Hero background: load the active image URL from the Supabase site_settings table.
-        // If Supabase configuration is not supplied yet, the current built-in image remains the fallback.
+        // Hero carousel: each image remains visible for exactly 4 seconds, then slides left.
+        // Admin-managed slides are stored as JSON in site_settings (setting_key=hero_slides_json).
         async function loadHeroBackground() {
-            const hero = document.getElementById('hero-section');
-            const fallback = window.TASKMTAANI_CONFIG.heroBackground.fallback;
-            if (!hero) return;
-
+            const host = document.getElementById('hero-slideshow');
+            if (!host) return;
+            const cfg = window.TASKMTAANI_CONFIG.heroBackground;
+            let slides = cfg.defaultSlides.slice();
             try {
                 const supabaseUrl = window.TASKMTAANI_SUPABASE_URL;
                 const supabaseAnonKey = window.TASKMTAANI_SUPABASE_ANON_KEY;
-                if (!supabaseUrl || !supabaseAnonKey) return;
-
-                const endpoint = `${supabaseUrl.replace(/\/$/, '')}/rest/v1/site_settings?key=eq.hero_background_url&select=value&limit=1`;
-                const response = await fetch(endpoint, {
-                    headers: {
-                        apikey: supabaseAnonKey,
-                        Authorization: `Bearer ${supabaseAnonKey}`
+                if (supabaseUrl && supabaseAnonKey) {
+                    const endpoint = `${supabaseUrl.replace(/\/$/, '')}/rest/v1/site_settings?setting_key=eq.hero_slides_json&select=setting_value&limit=1`;
+                    const response = await fetch(endpoint, { headers: { apikey: supabaseAnonKey, Authorization: `Bearer ${supabaseAnonKey}` } });
+                    if (response.ok) {
+                        const rows = await response.json();
+                        const raw = rows?.[0]?.setting_value;
+                        if (raw) {
+                            const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                            if (Array.isArray(parsed) && parsed.length) slides = parsed.filter(x => x && typeof x.url === 'string' && x.url.trim());
+                        }
                     }
-                });
-
-                if (!response.ok) return;
-                const rows = await response.json();
-                const imageUrl = rows?.[0]?.value;
-                if (typeof imageUrl === 'string' && imageUrl.trim()) {
-                    hero.style.setProperty('--taskmtaani-hero-image', `url("${imageUrl.trim().replace(/"/g, '\\"')}")`);
-                } else {
-                    hero.style.setProperty('--taskmtaani-hero-image', `url("${fallback}")`);
                 }
-            } catch (error) {
-                // Keep the fallback image if the backend is unavailable.
-                console.warn('TaskMtaani hero background could not be loaded from the backend.', error);
-            }
+            } catch (error) { console.warn('Using built-in TaskMtaani hero images.', error); }
+            if (!slides.length) slides = cfg.defaultSlides.slice();
+            host.replaceChildren();
+            const imgs = slides.map((slide, i) => {
+                const img = document.createElement('img');
+                img.className = 'hero-slide' + (i === 0 ? ' is-active' : '');
+                img.src = slide.url;
+                img.alt = '';
+                img.loading = i === 0 ? 'eager' : 'lazy';
+                img.decoding = 'async';
+                host.appendChild(img);
+                return img;
+            });
+            if (imgs.length < 2) return;
+            let current = 0;
+            window.setInterval(() => {
+                const next = (current + 1) % imgs.length;
+                imgs[next].classList.remove('is-leaving');
+                imgs[next].style.transition = 'none';
+                imgs[next].style.transform = 'translateX(100%)';
+                void imgs[next].offsetWidth;
+                imgs[next].style.transition = '';
+                imgs[next].style.transform = '';
+                imgs[current].classList.remove('is-active');
+                imgs[current].classList.add('is-leaving');
+                imgs[next].classList.add('is-active');
+                current = next;
+            }, cfg.intervalMs || 4000);
         }
         loadHeroBackground();
 
@@ -828,7 +855,7 @@ body.admin-mode #admin-dashboard{display:block}
 </div>
 <div id="admin-panel-bookings" class="admin-panel"><div class="bg-white rounded-2xl border p-5"><h2 class="text-xl font-bold">Bookings</h2><p class="text-sm text-gray-500 mb-5">Review requests and update their status.</p><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Customer</th><th>Service</th><th>Date</th><th>Location</th><th>Status</th><th>Update</th></tr></thead><tbody id="bookings-table"><tr><td colspan="6">Connect Supabase to load bookings.</td></tr></tbody></table></div></div></div>
 <div id="admin-panel-reviews" class="admin-panel"><div class="bg-white rounded-2xl border p-5"><h2 class="text-xl font-bold">Testimonials</h2><p class="text-sm text-gray-500 mb-5">Approve genuine customer reviews before publishing.</p><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Customer</th><th>Location</th><th>Rating</th><th>Review</th><th>Status</th><th>Action</th></tr></thead><tbody id="reviews-table"><tr><td colspan="6">Connect Supabase to load testimonials.</td></tr></tbody></table></div></div></div>
-<div id="admin-panel-settings" class="admin-panel"><div class="bg-white rounded-2xl border p-5"><h2 class="text-xl font-bold">Website Settings</h2><p class="text-sm text-gray-500 mb-5">Manage public-facing settings.</p><form id="settings-form" class="grid gap-4 max-w-3xl"><label class="text-sm font-medium">Hero background image URL<input id="setting-hero" class="admin-input mt-1"></label><label class="text-sm font-medium">Contact email<input id="setting-email" class="admin-input mt-1" value="taskmtaani@gmail.com"></label><label class="text-sm font-medium">WhatsApp number<input id="setting-whatsapp" class="admin-input mt-1" value="254719535117"></label><button class="w-fit px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold" type="submit">Save Website Settings</button></form></div></div>
+<div id="admin-panel-settings" class="admin-panel"><div class="bg-white rounded-2xl border p-5"><h2 class="text-xl font-bold">Website Settings</h2><p class="text-sm text-gray-500 mb-5">Manage public-facing settings.</p><form id="settings-form" class="grid gap-4 max-w-3xl"><div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4"><h3 class="font-bold text-gray-900">Hero background slideshow</h3><p class="text-sm text-gray-600 mt-1">Each image stays on screen for 4 seconds, then slides left. Add images using a publicly accessible image URL (for example, an image uploaded to your website or public image hosting).</p><div id="hero-slides-admin" class="grid gap-2 mt-4"></div><div class="grid md:grid-cols-2 gap-3 mt-4"><label class="text-sm font-medium">Image title<input id="hero-slide-title" class="admin-input mt-1" placeholder="e.g. Gardening"></label><label class="text-sm font-medium">Public image URL<input id="hero-slide-url" class="admin-input mt-1" placeholder="https://..." type="url"></label></div><button type="button" id="hero-slide-add" class="mt-3 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-semibold">Add image to slideshow</button><p id="hero-slides-status" class="text-xs text-gray-600 mt-2" aria-live="polite"></p></div><label class="text-sm font-medium">Contact email<input id="setting-email" class="admin-input mt-1" value="taskmtaani@gmail.com"></label><label class="text-sm font-medium">WhatsApp number<input id="setting-whatsapp" class="admin-input mt-1" value="254719535117"></label><button class="w-fit px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold" type="submit">Save Website Settings</button></form></div></div>
 <div id="admin-panel-versions" class="admin-panel"><div class="bg-white rounded-2xl border p-5"><div class="flex justify-between items-center gap-3 mb-5"><div><h2 class="text-xl font-bold">Version History</h2><p class="text-sm text-gray-500">Save and later restore website configuration snapshots.</p></div><button id="create-version" class="px-4 py-2 rounded-lg bg-gray-900 text-white font-semibold text-sm">Save Current Version</button></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Created</th><th>Type</th><th>Summary</th><th>Action</th></tr></thead><tbody id="versions-table"><tr><td colspan="4">Connect Supabase to load version history.</td></tr></tbody></table></div></div></div>
 </main></div></div></section>
 
@@ -844,7 +871,10 @@ async function services(){const b=$('services-table');try{const r=await api(`${t
 async function helpers(){const b=$('helpers-table');try{const r=await api(`${tables.providers}?select=id,full_name,profession,service_area,verification_status,active&order=full_name.asc`);b.innerHTML=r.length?r.map(x=>`<tr><td class="font-semibold">${esc(x.full_name)}</td><td>${esc(x.profession)}</td><td>${esc(x.service_area)}</td><td>${esc(x.verification_status||'pending')}</td><td>${x.active?'Yes':'No'}</td><td><button class="text-emerald-700" data-helper-id="${esc(x.id)}">View</button></td></tr>`).join(''):'<tr><td colspan="6">No helpers found.</td></tr>'}catch(e){b.innerHTML=`<tr><td colspan="6" class="text-red-600">${esc(e.message)}</td></tr>`}}
 async function bookings(){const b=$('bookings-table');try{const r=await api(`${tables.bookings}?select=*&order=created_at.desc&limit=100`);b.innerHTML=r.length?r.map(x=>`<tr><td>${esc(x.customer_name||x.name||'Customer')}</td><td>${esc(x.service||x.service_name||'')}</td><td>${esc(x.preferred_date||x.date||'')}</td><td>${esc(x.location||'')}</td><td>${esc(x.status||'pending')}</td><td><select class="admin-input text-xs" data-booking="${esc(x.id)}"><option ${x.status==='pending'?'selected':''}>pending</option><option ${x.status==='confirmed'?'selected':''}>confirmed</option><option ${x.status==='assigned'?'selected':''}>assigned</option><option ${x.status==='completed'?'selected':''}>completed</option><option ${x.status==='cancelled'?'selected':''}>cancelled</option></select></td></tr>`).join(''):'<tr><td colspan="6">No bookings found.</td></tr>'}catch(e){b.innerHTML=`<tr><td colspan="6" class="text-red-600">${esc(e.message)}</td></tr>`}}
 async function reviews(){const b=$('reviews-table');try{const [legacy,real]=await Promise.all([api(`${tables.testimonials}?select=*&order=created_at.desc&limit=100`).catch(()=>[]),api('/rest/v1/reviews?select=id,review_type,rating,review,approved,active,created_at,customer_id,provider_id,booking_id&order=created_at.desc&limit=100').catch(()=>[])]);const rows=[...real.map(x=>({id:x.id,kind:x.review_type,customer:'Customer',location:'Completed booking',rating:x.rating,review:x.review,status:x.approved?'approved':'pending',real:true})),...legacy.map(x=>({id:x.id,kind:'testimonial',customer:x.customer_name||x.name||'',location:x.location||'',rating:x.rating,review:x.review||x.comment||'',status:x.approved?'approved':(x.status||'pending'),real:false}))];b.innerHTML=rows.length?rows.map(x=>{const action=x.status==='approved'?'<span class="text-gray-400">Approved</span>':'<button class="text-emerald-700 font-semibold" data-review="'+esc(x.id)+'" data-review-real="'+(x.real?'1':'0')+'">Approve</button>';return '<tr><td>'+esc(x.customer)+'</td><td>'+esc(x.location)+'</td><td>'+esc(x.kind)+'</td><td>'+esc(x.rating||'')+'</td><td>'+esc(x.review||'')+'</td><td>'+esc(x.status)+'</td><td>'+action+'</td></tr>'}).join(''):'<tr><td colspan="7">No reviews found.</td></tr>'}catch(e){b.innerHTML='<tr><td colspan="7" class="text-red-600">'+esc(e.message)+'</td></tr>'}}
-async function settings(){try{const r=await api(`${tables.settings}?select=setting_key,setting_value&setting_key=in.(hero_background_url,contact_email,whatsapp_number)`);const m=Object.fromEntries(r.map(x=>[x.setting_key,x.setting_value]));$('setting-hero').value=m.hero_background_url||'';$('setting-email').value=m.contact_email||'taskmtaani@gmail.com';$('setting-whatsapp').value=m.whatsapp_number||'254719535117'}catch{}}
+let heroSlides = window.TASKMTAANI_CONFIG.heroBackground.defaultSlides.map(x=>({...x}));
+function renderHeroSlides(){const box=$('hero-slides-admin');if(!box)return;box.innerHTML=heroSlides.map((x,i)=>`<div class="flex items-center gap-3 rounded-lg bg-white border p-2"><img src="${esc(x.url)}" alt="" class="w-16 h-12 rounded object-cover bg-gray-100" onerror="this.style.visibility='hidden'"><div class="min-w-0 flex-1"><div class="font-semibold text-sm">${esc(x.title||'Hero image '+(i+1))}</div><div class="text-xs text-gray-500 truncate">${esc(x.url)}</div></div><button type="button" data-remove-hero-slide="${i}" class="text-red-600 text-sm font-semibold px-2 py-1">Remove</button></div>`).join('')||'<p class="text-sm text-gray-500">No images added. Add at least one image.</p>';box.querySelectorAll('[data-remove-hero-slide]').forEach(b=>b.addEventListener('click',()=>{heroSlides.splice(Number(b.dataset.removeHeroSlide),1);renderHeroSlides()}));}
+async function settings(){try{const r=await api(`${tables.settings}?select=setting_key,setting_value&setting_key=in.(hero_slides_json,contact_email,whatsapp_number)`);const m=Object.fromEntries(r.map(x=>[x.setting_key,x.setting_value]));if(m.hero_slides_json){const parsed=typeof m.hero_slides_json==='string'?JSON.parse(m.hero_slides_json):m.hero_slides_json;if(Array.isArray(parsed)&&parsed.length)heroSlides=parsed} $('setting-email').value=m.contact_email||'taskmtaani@gmail.com';$('setting-whatsapp').value=m.whatsapp_number||'254719535117'}catch{}renderHeroSlides();}
+$('hero-slide-add')?.addEventListener('click',()=>{const title=$('hero-slide-title').value.trim(),url=$('hero-slide-url').value.trim();if(!url){$('hero-slides-status').textContent='Enter a public image URL first.';return}try{new URL(url)}catch{$('hero-slides-status').textContent='Please enter a valid full URL starting with https://';return}if(!/^https?:$/.test(new URL(url).protocol)){$('hero-slides-status').textContent='Only public http/https image URLs are supported.';return}heroSlides.push({title:title||'TaskMtaani service',url});$('hero-slide-title').value='';$('hero-slide-url').value='';$('hero-slides-status').textContent='Image added to this draft. Click Save Website Settings to publish it.';renderHeroSlides()});
 async function versions(){const b=$('versions-table');try{const r=await api(`${tables.siteVersions||'site_versions'}?select=*&order=created_at.desc&limit=100`);b.innerHTML=r.length?r.map(x=>`<tr><td>${esc(x.created_at)}</td><td>${esc(x.change_type||x.type||'')}</td><td>${esc(x.summary||x.description||'')}</td><td><button class="text-emerald-700" data-restore="${esc(x.id)}">Restore</button></td></tr>`).join(''):'<tr><td colspan="4">No versions found.</td></tr>'}catch(e){b.innerHTML=`<tr><td colspan="4" class="text-red-600">${esc(e.message)}</td></tr>`}}
 async function pricing(){const b=$('pricing-table');try{const [r,svcs]=await Promise.all([api(`${tables.servicePricing||'service_pricing'}?select=*&order=priority.desc,created_at.desc&limit=500`),api(`${tables.services}?select=id,name&order=name.asc`)]);const names=Object.fromEntries(svcs.map(x=>[x.id,x.name]));$('pricing-service').innerHTML='<option value="">Select service…</option>'+svcs.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join('');b.innerHTML=r.length?r.map(x=>`<tr><td class="font-semibold">${esc(names[x.service_id]||'Unknown')}</td><td>KES ${Number(x.base_amount||0).toLocaleString('en-KE')} / ${esc(x.rate_type==='per_day'?'day':'service')}</td><td>${Number(x.minimum_days||1)}${x.maximum_days?'–'+esc(x.maximum_days):'+'} day(s)</td><td>${esc(x.location_rule||'*')}</td><td>${esc(x.job_type_rule||'*')}</td><td>${esc(x.priority||0)}</td><td>${x.active?'Active':'Inactive'}</td><td><button class="text-emerald-700 mr-3" data-edit-pricing="${esc(x.id)}">Edit</button><button class="text-red-600" data-del-pricing="${esc(x.id)}">Delete</button></td></tr>`).join(''):'<tr><td colspan="8">No pricing rules found.</td></tr>'}catch(e){b.innerHTML=`<tr><td colspan="8" class="text-red-600">${esc(e.message)}</td></tr>`}}
 function clearPricingForm(){$('pricing-id').value='';$('pricing-form').reset();$('pricing-min-days').value='1';$('pricing-priority').value='0';$('pricing-currency').value='KES';$('pricing-active').checked=true;$('pricing-form').classList.remove('hidden')}
@@ -877,11 +907,11 @@ function adminSignOut(){
 document.querySelectorAll('.admin-nav-btn').forEach(b=>b.onclick=()=>panel(b.dataset.adminPanel));document.querySelectorAll('.admin-primary-action').forEach(b=>b.onclick=()=>$(b.dataset.form)?.classList.toggle('hidden'));document.querySelectorAll('[data-cancel-form]').forEach(b=>b.onclick=()=>$(b.dataset.cancelForm)?.classList.add('hidden'));$('admin-exit')?.addEventListener('click',()=>{if(confirm('Sign out of TaskMtaani?'))adminSignOut()});$('admin-refresh')?.addEventListener('click',()=>panel(document.querySelector('.admin-nav-btn.active')?.dataset.adminPanel||'overview'));
 $('service-form')?.addEventListener('submit',async e=>{e.preventDefault();try{const id=$('service-id').value;const body={name:$('service-name').value.trim(),description:$('service-description').value.trim(),icon:$('service-icon').value.trim(),active:$('service-active').checked,updated_at:new Date().toISOString()};await api(id?`${tables.services}?id=eq.${encodeURIComponent(id)}`:tables.services,{method:id?'PATCH':'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(body)});e.target.reset();$('service-id').value='';e.target.classList.add('hidden');services();stats();alert('Service saved.')}catch(x){alert(x.message)}});
 $('helper-form')?.addEventListener('submit',async e=>{e.preventDefault();try{await api(tables.providers,{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({full_name:$('helper-name').value.trim(),profession:$('helper-profession').value.trim(),phone:$('helper-phone').value.trim(),whatsapp:$('helper-whatsapp').value.trim(),experience_years:Number($('helper-experience').value)||0,service_area:$('helper-area').value.trim(),availability:$('helper-availability').value.trim(),verification_status:$('helper-verification').value,reference_status:$('helper-reference').value,active:$('helper-active').checked})});e.target.reset();e.target.classList.add('hidden');helpers();stats();alert('Helper saved.')}catch(x){alert(x.message)}});
-$('settings-form')?.addEventListener('submit',async e=>{e.preventDefault();try{for(const [key,value] of Object.entries({hero_background_url:$('setting-hero').value.trim(),contact_email:$('setting-email').value.trim(),whatsapp_number:$('setting-whatsapp').value.trim()})){await api(`${tables.settings}?setting_key=eq.${encodeURIComponent(key)}`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({setting_value:value,updated_at:new Date().toISOString()})})}alert('Website settings saved.')}catch(x){alert(x.message)}});
+$('settings-form')?.addEventListener('submit',async e=>{e.preventDefault();try{if(!heroSlides.length)throw new Error('Please keep at least one hero image.');const values={hero_slides_json:JSON.stringify(heroSlides),contact_email:$('setting-email').value.trim(),whatsapp_number:$('setting-whatsapp').value.trim()};for(const [key,value] of Object.entries(values)){const body={setting_key:key,setting_value:value,updated_at:new Date().toISOString()};await api(`${tables.settings}?on_conflict=setting_key`,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(body)})} $('hero-slides-status').textContent='Saved. Reload the public homepage to see the updated slideshow.';alert('Website settings and hero slideshow saved.')}catch(x){alert('Could not save website settings: '+x.message)}});
 document.addEventListener('change',async e=>{const b=e.target.closest('[data-booking]');if(b)try{await api(`${tables.bookings}?id=eq.${encodeURIComponent(b.dataset.booking)}`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({status:b.value,updated_at:new Date().toISOString()})})}catch(x){alert(x.message)}});document.addEventListener('click',async e=>{const d=e.target.closest('[data-del-service]');if(d&&confirm('Delete this service?'))try{await api(`${tables.services}?id=eq.${encodeURIComponent(d.dataset.delService)}`,{method:'DELETE'});services();stats()}catch(x){alert(x.message)}const r=e.target.closest('[data-review]');if(r)try{if(r.dataset.reviewReal==='1'){await api(`/rest/v1/reviews?id=eq.${encodeURIComponent(r.dataset.review)}`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({approved:true,active:true,updated_at:new Date().toISOString()})})}else{await api(`${tables.testimonials}?id=eq.${encodeURIComponent(r.dataset.review)}`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({approved:true,active:true,updated_at:new Date().toISOString()})})}reviews()}catch(x){alert(x.message)}});
 $('pricing-form')?.addEventListener('submit',async e=>{e.preventDefault();try{const id=$('pricing-id').value;const max=$('pricing-max-days').value.trim();const body={service_id:$('pricing-service').value,rate_type:$('pricing-rate-type').value,base_amount:Number($('pricing-amount').value),currency:$('pricing-currency').value.trim()||'KES',minimum_days:Math.max(1,Number($('pricing-min-days').value)||1),maximum_days:max?Math.max(1,Number(max)):null,location_rule:$('pricing-location').value.trim()||'*',job_type_rule:$('pricing-job-type').value.trim()||'*',priority:Math.max(0,Number($('pricing-priority').value)||0),active:$('pricing-active').checked,notes:$('pricing-notes').value.trim()||null,updated_at:new Date().toISOString()};await api(id?`${tables.servicePricing||'service_pricing'}?id=eq.${encodeURIComponent(id)}`:(tables.servicePricing||'service_pricing'),{method:id?'PATCH':'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(body)});e.target.reset();$('pricing-id').value='';$('pricing-min-days').value='1';$('pricing-priority').value='0';$('pricing-currency').value='KES';$('pricing-active').checked=true;e.target.classList.add('hidden');pricing();alert('Pricing rule saved.')}catch(x){alert(x.message)}});
 document.addEventListener('click',async e=>{const ep=e.target.closest('[data-edit-pricing]');if(ep)await editPricing(ep.dataset.editPricing);const dp=e.target.closest('[data-del-pricing]');if(dp&&confirm('Delete this pricing rule?'))try{await api(`${tables.servicePricing||'service_pricing'}?id=eq.${encodeURIComponent(dp.dataset.delPricing)}`,{method:'DELETE'});pricing()}catch(x){alert(x.message)}const es=e.target.closest('[data-edit-service]');if(es)try{const r=await api(`${tables.services}?id=eq.${encodeURIComponent(es.dataset.editService)}&select=*&limit=1`);const x=r[0];if(x){$('service-id').value=x.id;$('service-name').value=x.name||'';$('service-description').value=x.description||'';$('service-icon').value=x.icon||'';$('service-active').checked=!!x.active;$('service-form').classList.remove('hidden');$('service-form').scrollIntoView({behavior:'smooth',block:'start'})}}catch(x){alert(x.message)}});
-$('create-version')?.addEventListener('click',async()=>{try{await api(tables.siteVersions||'site_versions',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({change_type:'manual_snapshot',summary:'Manual website settings snapshot',snapshot:{hero_background_url:$('setting-hero').value,contact_email:$('setting-email').value,whatsapp_number:$('setting-whatsapp').value}})});alert('Version saved.');versions()}catch(x){alert(x.message)}});
+$('create-version')?.addEventListener('click',async()=>{try{await api(tables.siteVersions||'site_versions',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({change_type:'manual_snapshot',summary:'Manual website settings snapshot',snapshot:{hero_slides:heroSlides,contact_email:$('setting-email').value,whatsapp_number:$('setting-whatsapp').value}})});alert('Version saved.');versions()}catch(x){alert(x.message)}});
 if(location.hash==='#admin')enter();window.addEventListener('hashchange',()=>location.hash==='#admin'?enter():exit());window.TaskMtaaniAdmin={enter,enterAuthenticated,exit,adminSignOut,panel,api};
 })();
 </script>
