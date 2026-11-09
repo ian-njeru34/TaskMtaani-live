@@ -1050,7 +1050,7 @@ window.TaskMtaaniProviderApplications={load:loadApplications};
 })();
 </script>
 <div id="password-reset-modal" class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-950/70 p-4">
-  <div class="w-full max-w-md rounded-2xl bg-white shadow-2xl p-6">
+  <div class="w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-2xl bg-white shadow-2xl p-6" style="max-height:calc(100dvh - 2rem);overflow-y:auto;-webkit-overflow-scrolling:touch">
     <div class="flex items-center justify-between mb-5"><div><p class="text-sm text-emerald-600 font-semibold">TASKMTAANI</p><h2 class="text-2xl font-bold text-gray-900">Reset Password</h2><p id="password-reset-subtitle" class="text-sm text-gray-500 mt-1">Enter the email used to register your account.</p></div><button id="password-reset-close" type="button" class="text-gray-500 text-xl" aria-label="Close">&times;</button></div>
     <form id="password-reset-request-form" class="space-y-4">
       <input id="password-reset-email" type="email" required autocomplete="email" placeholder="Email address" class="admin-input w-full">
