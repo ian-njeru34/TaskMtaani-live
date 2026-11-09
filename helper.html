@@ -2,6 +2,14 @@
 <html lang="en">
 <head>
     <style>
+/* Typography system: three complementary typefaces */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap');
+:root{--font-body:'DM Sans',sans-serif;--font-heading:'Manrope',sans-serif;--font-accent:'Playfair Display',serif}
+html,body{font-family:var(--font-body)}
+h1,h2,h3,h4,h5,h6,.font-heading{font-family:var(--font-heading)}
+.hero h1,.editorial-heading,.section-heading{font-family:var(--font-accent)}
+button,input,select,textarea{font-family:var(--font-body)}
+
         /* Mobile navigation and booking usability */
         #booking-form { scroll-margin-top: 90px; }
         @media (max-width: 767px) {
