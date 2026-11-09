@@ -1081,26 +1081,29 @@ window.TaskMtaaniProviderApplications={load:loadApplications};
 })();
 </script>
 <div id="customer-auth-modal" class="fixed inset-0 z-[120] hidden items-start sm:items-center justify-center overflow-y-auto bg-slate-950/70 p-4 account-modal" style="height:100dvh;align-items:flex-start">
-  <div class="my-4 w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-2xl bg-white shadow-2xl p-6" style="max-height:calc(100dvh - 2rem);overflow-y:auto;-webkit-overflow-scrolling:touch">
-    <div class="flex items-center justify-between mb-5"><div><p class="text-sm text-emerald-600 font-semibold">TASKMTAANI</p><h2 id="customer-auth-title" class="text-2xl font-bold">Choose your account</h2><p id="auth-role-subtitle" class="text-sm text-gray-500 mt-1">Select how you want to use TaskMtaani.</p></div><button id="customer-auth-close" type="button" class="text-gray-500 text-xl" aria-label="Close">&times;</button></div>
-    <div class="flex gap-2 mb-5">
+  <div class="my-3 w-full max-w-md max-h-[calc(100dvh-1.5rem)] overflow-y-auto overscroll-contain rounded-2xl bg-white shadow-2xl p-4" style="max-height:calc(100dvh - 1.5rem);overflow-y:auto;-webkit-overflow-scrolling:touch">
+    <div class="flex items-center justify-between mb-3"><div><p class="text-xs text-emerald-600 font-semibold">TASKMTAANI</p><h2 id="customer-auth-title" class="text-xl font-bold">Choose your account</h2><p id="auth-role-subtitle" class="text-xs text-gray-500 mt-1">Select how you want to use TaskMtaani.</p></div><button id="customer-auth-close" type="button" class="text-gray-500 text-xl" aria-label="Close">&times;</button></div>
+    <div class="flex gap-2 mb-3">
       <button id="auth-role-customer" type="button" class="flex-1 py-2 rounded-lg bg-emerald-600 text-white font-semibold"><i class="fa-solid fa-user mr-1"></i> Customer</button>
       <button id="auth-role-helper" type="button" class="flex-1 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold"><i class="fa-solid fa-briefcase mr-1"></i> Helper</button>
       <button id="auth-role-admin" type="button" class="flex-1 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold"><i class="fa-solid fa-shield-halved mr-1"></i> Admin</button>
     </div>
     <div id="auth-customer-helper-area">
-      <div class="flex gap-2 mb-5"><button id="auth-login-tab" type="button" class="flex-1 py-2 rounded-lg bg-emerald-600 text-white font-semibold">Sign in</button><button id="auth-register-tab" type="button" class="flex-1 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold">Register</button></div>
+      <div class="flex gap-2 mb-3"><button id="auth-login-tab" type="button" class="flex-1 py-2 rounded-lg bg-emerald-600 text-white font-semibold">Sign in</button><button id="auth-register-tab" type="button" class="flex-1 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold">Register</button></div>
       <form id="customer-login-form" class="space-y-4"><input id="customer-login-email" type="text" required autocomplete="username" placeholder="Email address or mobile number" class="admin-input"><input id="customer-login-password" type="password" required autocomplete="current-password" placeholder="Password" class="admin-input"><div class="text-right -mt-2"><button id="customer-forgot-password" type="button" class="text-sm text-emerald-700 hover:underline font-semibold">Forgot password?</button></div><button id="customer-login-submit" class="w-full py-3 rounded-lg bg-emerald-600 text-white font-semibold" type="submit">Sign in</button></form>
-      <form id="customer-register-form" class="space-y-4 hidden">
+      <style>
+#customer-register-form>.admin-input{padding:.5rem .7rem;font-size:.9rem}#helper-register-fields .admin-input{padding:.45rem .6rem;font-size:.85rem;border-radius:.5rem}#helper-register-fields textarea{min-height:2.5rem}
+</style>
+<form id="customer-register-form" class="space-y-2 hidden">
         <input id="customer-register-name" required placeholder="Full name" autocomplete="name" class="admin-input">
         <input id="customer-register-email" type="email" autocomplete="email" placeholder="Email address (optional)" class="admin-input">
         <input id="customer-register-phone" type="tel" required autocomplete="tel" inputmode="tel" placeholder="Mobile number (e.g. 0712 345 678)" class="admin-input">
-        <div id="helper-register-fields" class="hidden space-y-3 rounded-xl border border-sky-100 bg-sky-50 p-3">
-          <p class="text-sm font-semibold text-sky-900">Helper information</p>
+        <div id="helper-register-fields" class="hidden space-y-2 rounded-xl border border-sky-100 bg-sky-50 p-2">
+          <p class="text-xs font-semibold text-sky-900">Helper information</p>
           <input id="customer-register-profession" placeholder="Profession (e.g. Cleaner, Driver, Cook)" class="admin-input">
           <div class="grid grid-cols-2 gap-3"><input id="customer-register-experience" type="number" min="0" step="1" placeholder="Experience (years)" class="admin-input"><input id="customer-register-area" placeholder="Service area / town" class="admin-input"></div>
           <input id="customer-register-availability" placeholder="Availability (e.g. weekdays, weekends)" class="admin-input">
-          <textarea id="customer-register-bio" rows="2" placeholder="Brief professional introduction (optional)" class="admin-input"></textarea>
+          <textarea id="customer-register-bio" rows="1" placeholder="Brief professional introduction (optional)" class="admin-input"></textarea>
         </div>
         <input id="customer-register-password" type="password" minlength="8" required autocomplete="new-password" placeholder="Create password (at least 8 characters)" class="admin-input">
         <button id="customer-register-submit" class="w-full py-3 rounded-lg bg-emerald-600 text-white font-semibold" type="submit">Send verification code</button>
