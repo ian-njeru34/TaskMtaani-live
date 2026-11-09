@@ -212,7 +212,7 @@ body.admin-mode #admin-dashboard{display:block}
                 <a href="#services" class="block py-2 text-gray-600 hover:text-emerald-600">Services</a>
                 <a href="#how-it-works" class="block py-2 text-gray-600 hover:text-emerald-600">How It Works</a>
                 <a href="#why-us" class="block py-2 text-gray-600 hover:text-emerald-600">Why Us</a>
-                <a href="#booking-form" class="block py-2 whatsapp-green text-white text-center rounded-full font-semibold mt-2">Book via WhatsApp</a>
+                <a href="#booking-form" class="block py-2 whatsapp-green text-white text-center rounded-full font-semibold mt-2">Request a Helper</a>
                 <button id="account-mobile-btn" type="button" class="w-full text-left py-3 text-emerald-700 font-semibold">
                     <i class="fa-solid fa-right-to-bracket mr-2"></i><span id="account-mobile-label">Login</span>
                 </button>
@@ -228,7 +228,7 @@ body.admin-mode #admin-dashboard{display:block}
                 Your Trusted Partner for <br class="hidden md:block"> Everyday Tasks in Kenya
             </h1>
             <p class="text-lg md:text-xl text-gray-200 max-w-3xl mx-auto mb-8">
-                Hire vetted drivers, cooks, gardeners, plumbers, cleaners, and dobis. Tell us what you need, and we'll connect you on WhatsApp in minutes.
+                Hire vetted drivers, cooks, gardeners, plumbers, cleaners, and dobis. Tell us what you need, your budget and location. We match suitable active helpers and an administrator handles dispatch.
             </p>
             <a href="#booking-form" class="whatsapp-green text-white text-lg font-bold py-4 px-10 rounded-full shadow-lg hover:shadow-xl transition duration-300 inline-block">
                 <i class="fa-solid fa-magnifying-glass mr-2"></i> Find Your Helper Now
@@ -296,7 +296,7 @@ body.admin-mode #admin-dashboard{display:block}
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Get Help in 3 Simple Steps</h2>
-                <p class="text-lg text-gray-600 max-w-2xl mx-auto">We've made hiring help as easy as sending a message.</p>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">Submit your task request securely and let our team coordinate the right helper.</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
                 <div class="p-6">
@@ -310,8 +310,8 @@ body.admin-mode #admin-dashboard{display:block}
                     <div class="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md border-4 border-emerald-200">
                         <span class="text-2xl font-bold text-emerald-600">2</span>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">We Connect on WhatsApp</h3>
-                    <p class="text-gray-600">Click 'Book via WhatsApp' and your request is pre-filled. We'll confirm availability and details with you directly.</p>
+                    <h3 class="text-xl font-bold mb-3">We Match and Dispatch</h3>
+                    <p class="text-gray-600">Your request is matched with active helpers who provide the service. An administrator reviews the matches and dispatches the most suitable helper.</p>
                 </div>
                 <div class="p-6">
                     <div class="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md border-4 border-emerald-200">
@@ -330,7 +330,7 @@ body.admin-mode #admin-dashboard{display:block}
             <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-2xl p-8 md:p-12">
                 <div class="text-center mb-8">
                     <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Find Your Perfect Helper</h2>
-                    <p class="text-gray-600">Fill in the details below to start your booking on WhatsApp.</p>
+                    <p class="text-gray-600">Sign in to submit your request. We will match it with suitable active helpers, and an administrator will dispatch the helper.</p>
                 </div>
                 
                 <form id="bookingForm" class="space-y-6">
@@ -414,10 +414,17 @@ body.admin-mode #admin-dashboard{display:block}
                         <input type="tel" id="customerPhone" name="customerPhone" placeholder="e.g., 0712 345 678" autocomplete="tel" inputmode="tel" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition duration-200 bg-gray-50">
                     </div>
 
+                    <!-- Customer budget -->
+                    <div>
+                        <label for="budget" class="block text-sm font-semibold text-gray-700 mb-2">Your Budget (KES) <span class="text-red-500">*</span></label>
+                        <input type="number" id="budget" name="budget" min="1" max="10000000" step="1" required inputmode="numeric" placeholder="e.g. 2500" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition duration-200 bg-gray-50">
+                        <p class="text-xs text-gray-500 mt-1">Tell us the amount you are willing to spend. This is your budget, not a confirmed price.</p>
+                    </div>
+
                     <!-- Task Details -->
                     <div>
-                        <label for="details" class="block text-sm font-semibold text-gray-700 mb-2">What do you need help with? <span class="text-red-500">*</span></label>
-                        <textarea id="details" name="details" rows="4" required maxlength="500" placeholder="Briefly describe the task, property, or work required..." class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition duration-200 bg-gray-50 resize-y"></textarea>
+                        <label for="details" class="block text-sm font-semibold text-gray-700 mb-2">Describe the task <span class="text-red-500">*</span></label>
+                        <textarea id="details" name="details" rows="4" required maxlength="1000" placeholder="Describe exactly what needs to be done, the size or condition of the work, and any important requirements..." class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition duration-200 bg-gray-50 resize-y"></textarea>
                         <p class="text-xs text-gray-500 mt-1">Please avoid sharing passwords, payment details, or other sensitive information.</p>
                     </div>
 
@@ -433,9 +440,9 @@ body.admin-mode #admin-dashboard{display:block}
                     <!-- Submit Button -->
                     <div class="pt-4">
                         <button type="submit" class="w-full whatsapp-green text-white text-lg font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300 flex items-center justify-center">
-                            <i class="fa-brands fa-whatsapp text-2xl mr-3"></i> Book via WhatsApp
+                            <i class="fa-solid fa-paper-plane text-xl mr-3"></i> Submit Service Request
                         </button>
-                        <p class="text-center text-xs text-gray-500 mt-3">You will be redirected to WhatsApp to confirm your booking.</p>
+                        <p class="text-center text-xs text-gray-500 mt-3">Your request will be sent to TaskMtaani for review and admin dispatch.</p>
                     </div>
                 </form>
             </div>
@@ -572,7 +579,7 @@ body.admin-mode #admin-dashboard{display:block}
                         <li><a href="#services" class="hover:text-emerald-500 transition">Services</a></li>
                         <li><a href="#how-it-works" class="hover:text-emerald-500 transition">How It Works</a></li>
                         <li><a href="#why-us" class="hover:text-emerald-500 transition">Why Us</a></li>
-                        <li><a href="#booking-form" class="hover:text-emerald-500 transition">Book Now</a></li>
+                        <li><a href="#booking-form" class="hover:text-emerald-500 transition">Request a Helper</a></li>
                     </ul>
                 </div>
                 <div>
@@ -815,36 +822,91 @@ body.admin-mode #admin-dashboard{display:block}
 
         bookingForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            const service = document.getElementById('service').value; const date = document.getElementById('date').value; const time = document.getElementById('time').value;
+            const service = document.getElementById('service').value;
+            const date = document.getElementById('date').value;
+            const time = document.getElementById('time').value;
             const duration = Math.max(1, Number(document.getElementById('duration')?.value || 1));
             const jobType = document.getElementById('jobType')?.value || 'Standard';
             const gender = document.querySelector('input[name="gender"]:checked')?.value || 'No Preference';
-            const location = document.getElementById('location').value.trim(); const name = document.getElementById('name').value.trim();
-            const customerPhone = document.getElementById('customerPhone').value.trim(); const details = document.getElementById('details').value.trim();
-            if (!service || !date || !location || !details) { alert('Please fill in all required fields (Service, Date, Location, and Task Details).'); return; }
-            if (!currentQuote && quotePanel && !quotePanel.classList.contains('hidden')) await calculateQuote();
-            const formattedDate = new Date(date).toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
-            let message = `Hello TaskMtaani, I'd like to request a service.\n\n*Service:* ${service}\n*Preferred Date:* ${formattedDate}\n*Duration:* ${duration} day${duration===1?'':'s'}\n`;
-            if (time) message += `*Preferred Time:* ${time}\n`;
-            message += `*Preferred Gender:* ${gender}\n*Job Type:* ${jobType}\n*Location:* ${location}\n*Task Details:* ${details}\n`;
-            if (currentQuote) message += `*Estimated Quote:* ${currentQuote.currency} ${currentQuote.amount.toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2})}\n`;
-            if (name) message += `*Name:* ${name}\n`; if (customerPhone) message += `*My Phone:* ${customerPhone}\n`;
-            message += `\nPlease confirm availability and the final price before payment. Thank you.`;
-            const token = localStorage.getItem('taskmtaani_access_token');
-            const cfg = {url:(window.TASKMTAANI_SUPABASE_URL||'').replace(/\/$/,''), key:window.TASKMTAANI_SUPABASE_ANON_KEY||''};
-            if (token && cfg.url && cfg.key && !cfg.url.startsWith('YOUR_') && !cfg.key.startsWith('YOUR_')) {
-              try {
-                const u = await fetch(cfg.url+'/auth/v1/user',{headers:{apikey:cfg.key,Authorization:'Bearer '+token}}); const user = await u.json();
-                if (u.ok && user?.id) {
-                  let serviceId = currentQuote?.service_id || null;
-                  if (!serviceId) { const sr = await fetch(cfg.url+'/rest/v1/services?name=eq.'+encodeURIComponent(service)+'&select=id&limit=1',{headers:{apikey:cfg.key,Authorization:'Bearer '+token}}); if (sr.ok) serviceId=(await sr.json())[0]?.id||null; }
-                  const payload={customer_id:user.id,service_id:serviceId,service_name:service,preferred_date:date,preferred_time:time||null,preferred_gender:gender,job_type:jobType,location,customer_name:name||user.user_metadata?.full_name||user.email||'',customer_phone:customerPhone||user.user_metadata?.phone||'',task_details:details,status:'pending',estimated_price:currentQuote?.amount||null,quoted_amount:currentQuote?.amount||null,quote_status:currentQuote?'estimated':'pending',duration_days:duration,pricing_rule_id:currentQuote?.pricing_id||null,currency:currentQuote?.currency||'KES',whatsapp_message:message};
-                  const br=await fetch(cfg.url+'/rest/v1/bookings',{method:'POST',headers:{apikey:cfg.key,Authorization:'Bearer '+token,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(payload)});
-                  if(!br.ok) throw Error(await br.text()); window.dispatchEvent(new Event('taskmtaani-booking-saved'));
-                }
-              } catch(err) { console.warn('Booking was not saved to Supabase:',err); }
+            const location = document.getElementById('location').value.trim();
+            const name = document.getElementById('name').value.trim();
+            const customerPhone = document.getElementById('customerPhone').value.trim();
+            const details = document.getElementById('details').value.trim();
+            const budget = Number(document.getElementById('budget').value);
+            if (!service || !date || !location || !details || !Number.isFinite(budget) || budget <= 0) {
+                alert('Please provide the service, preferred date, location, budget and task description.');
+                return;
             }
-            window.open(`https://wa.me/254719535117?text=${encodeURIComponent(message)}`, '_blank');
+            const cfg = {url:(window.TASKMTAANI_SUPABASE_URL||'').replace(/\/$/,''), key:window.TASKMTAANI_SUPABASE_ANON_KEY||''};
+            const token = localStorage.getItem('taskmtaani_access_token');
+            if (!token) {
+                alert('Please sign in to your customer account before submitting a service request.');
+                document.getElementById('account-nav-btn')?.click();
+                return;
+            }
+            if (!cfg.url || !cfg.key || cfg.url.startsWith('YOUR_') || cfg.key.startsWith('YOUR_')) {
+                alert('TaskMtaani booking is temporarily unavailable. Please try again later.');
+                return;
+            }
+            const submitButton = bookingForm.querySelector('button[type="submit"]');
+            const originalButton = submitButton?.innerHTML;
+            if (submitButton) { submitButton.disabled = true; submitButton.textContent = 'Submitting request…'; }
+            try {
+                const userResponse = await fetch(cfg.url+'/auth/v1/user', {headers:{apikey:cfg.key,Authorization:'Bearer '+token}});
+                const user = await userResponse.json();
+                if (!userResponse.ok || !user?.id) {
+                    localStorage.removeItem('taskmtaani_access_token');
+                    localStorage.removeItem('taskmtaani_refresh_token');
+                    alert('Your session has expired. Please sign in again to submit your request.');
+                    document.getElementById('account-nav-btn')?.click();
+                    return;
+                }
+                if (!currentQuote && quotePanel && !quotePanel.classList.contains('hidden')) await calculateQuote();
+                let serviceId = currentQuote?.service_id || null;
+                if (!serviceId) {
+                    const sr = await fetch(cfg.url+'/rest/v1/services?name=eq.'+encodeURIComponent(service)+'&select=id&limit=1', {headers:{apikey:cfg.key,Authorization:'Bearer '+token}});
+                    if (sr.ok) serviceId = (await sr.json())[0]?.id || null;
+                }
+                const payload = {
+                    customer_id:user.id,
+                    service_id:serviceId,
+                    service_name:service,
+                    preferred_date:date,
+                    preferred_time:time||null,
+                    preferred_gender:gender,
+                    job_type:jobType,
+                    location,
+                    customer_name:name||user.user_metadata?.full_name||'',
+                    customer_phone:customerPhone||user.phone||'',
+                    task_details:details,
+                    budget_amount:budget,
+                    status:'pending',
+                    estimated_price:currentQuote?.amount||null,
+                    quoted_amount:null,
+                    quote_status:'pending',
+                    duration_days:duration,
+                    pricing_rule_id:currentQuote?.pricing_id||null,
+                    currency:'KES'
+                };
+                const response = await fetch(cfg.url+'/rest/v1/bookings', {
+                    method:'POST',
+                    headers:{apikey:cfg.key,Authorization:'Bearer '+token,'Content-Type':'application/json',Prefer:'return=representation'},
+                    body:JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error((await response.text()) || 'Unable to submit your request.');
+                const saved = await response.json();
+                window.dispatchEvent(new Event('taskmtaani-booking-saved'));
+                alert('Your service request has been submitted. TaskMtaani will review suitable active helpers and an administrator will dispatch the helper. You can check your request status in your customer account.');
+                bookingForm.reset();
+                if (quotePanel) quotePanel.classList.add('hidden');
+                currentQuote = null;
+                if (saved?.[0]?.id) console.info('TaskMtaani request created:', saved[0].id);
+            } catch (err) {
+                console.error('TaskMtaani request submission failed:', err);
+                alert('We could not submit your request. Please check your connection and try again. '+(err.message||''));
+            } finally {
+                if (submitButton) { submitButton.disabled = false; submitButton.innerHTML = originalButton || 'Submit Service Request'; }
+            }
         });
         calculateQuote();
     </script>
