@@ -1,0 +1,16 @@
+{
+  "appId": "ke.co.taskmtaani.app",
+  "appName": "TaskMtaani",
+  "webDir": "www",
+  "server": {
+    "url": "https://taskmtaani-live.vercel.app",
+    "cleartext": false,
+    "allowNavigation": [
+      "taskmtaani-live.vercel.app",
+      "*.supabase.co"
+    ]
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
