@@ -1293,5 +1293,16 @@ window.TaskMtaaniProviderApplications={load:loadApplications};
 async function apply(){try{const r=await fetch(cfg.url+'/rest/v1/services?active=eq.true&select=name,image_url',{headers:{apikey:cfg.key,Authorization:'Bearer '+cfg.key}});if(!r.ok)return;const rows=await r.json();document.querySelectorAll('.service-card').forEach(card=>{const title=(card.querySelector('h3')?.textContent||'').trim().toLowerCase();const row=rows.find(x=>String(x.name||'').trim().toLowerCase()===title||String(x.name||'').trim().toLowerCase().replace(/s$/,'')===title.replace(/s$/,''));if(!row?.image_url)return;try{const u=new URL(row.image_url);if(u.origin!==cfg.url||!u.pathname.includes('/storage/v1/object/public/service-backgrounds/'))return;}catch{return;}card.style.backgroundImage='linear-gradient(rgba(8,20,32,.68),rgba(8,20,32,.72)),url("'+row.image_url+'")';card.style.backgroundSize='cover';card.style.backgroundPosition='center';card.style.color='#fff';card.querySelectorAll('p').forEach(p=>p.style.color='rgba(255,255,255,.92)');card.querySelectorAll('h3').forEach(h=>h.style.color='#fff');card.querySelectorAll('.rounded-full').forEach(el=>el.style.backgroundColor='rgba(255,255,255,.18)');card.querySelectorAll('i').forEach(el=>el.style.color='#fff');});}catch(e){console.warn('Service background images unavailable',e);}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();})();
 </script>
+
+<!-- TaskMtaani Android test app download -->
+<style>
+#taskmtaani-apk-download{position:fixed;left:16px;bottom:18px;z-index:90;display:inline-flex;align-items:center;gap:9px;padding:12px 16px;border-radius:999px;background:#1d4ed8;color:#fff;font:600 14px system-ui,sans-serif;text-decoration:none;box-shadow:0 8px 24px rgba(15,23,42,.25);transition:transform .2s,background .2s}
+#taskmtaani-apk-download:hover{background:#1e40af;transform:translateY(-2px)}
+#taskmtaani-apk-download i{font-size:17px}
+@media(max-width:480px){#taskmtaani-apk-download{left:10px;bottom:12px;padding:11px 13px;font-size:13px}}
+</style>
+<a id="taskmtaani-apk-download" href="https://github.com/ian-njeru34/TaskMtaani-live/releases/latest/download/TaskMtaani-debug.apk" aria-label="Download TaskMtaani Android test app">
+  <i class="fa-brands fa-android" aria-hidden="true"></i><span>Download App</span>
+</a>
 </body>
 </html>
