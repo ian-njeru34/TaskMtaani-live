@@ -31,10 +31,11 @@ No secrets or API keys are stored in this repository. The function continues to 
 Before testing, confirm these secrets remain configured under **Edge Functions → Secrets**:
 
 - `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_PUBLISHABLE_KEYS`
+- `SUPABASE_SECRET_KEYS`
 - `HASHBACK_API_KEY`
 
-Do not paste secret values into GitHub or this README. If the project currently uses the built-in `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` runtime variables, leave them as they are; only ensure `HASHBACK_API_KEY` remains configured.
+Do not paste secret values into GitHub or this README. This function reads the `default` entries from `SUPABASE_PUBLISHABLE_KEYS` and `SUPABASE_SECRET_KEYS` (JSON objects), plus `SUPABASE_URL` and `HASHBACK_API_KEY`. Preserve the existing secret values and formats; do not replace them with a raw service-role key.
 
 ## Test after deployment
 
