@@ -1250,5 +1250,23 @@ window.TaskMtaaniProviderApplications={load:loadApplications};
 <script>
 (function(){document.body.classList.add('taskmtaani-customer-page');function boot(){if(window.TaskMtaaniCustomer){const t=localStorage.getItem('taskmtaani_access_token');window.TaskMtaaniCustomer.refresh();if(!t)window.TaskMtaaniCustomer.openAuth(false,'customer');}}setTimeout(boot,50);})();
 </script>
+
+<script id="taskmtaani-brand-settings">
+(function(){
+ const fallback='TaskMtaani',url=window.TASKMTAANI_SUPABASE_URL,key=window.TASKMTAANI_SUPABASE_ANON_KEY;
+ const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+ function apply(b){const name=String(b.name||fallback).trim()||fallback,logo=String(b.logo||'');
+ document.title=document.title.replace(/TaskMtaani/g,name);
+ document.querySelectorAll('meta[name="author"],meta[property="og:site_name"]').forEach(x=>x.content=name);
+ document.querySelectorAll('meta[property="og:title"],meta[name="twitter:title"],meta[property="og:image:alt"]').forEach(x=>x.content=x.content.replace(/TaskMtaani/g,name));
+ document.querySelectorAll('script[type="application/ld+json"]').forEach(x=>{try{const d=JSON.parse(x.textContent);d.name=name;x.textContent=JSON.stringify(d)}catch{}});
+ const markup=logo?'<img src="'+esc(logo)+'" alt="'+esc(name)+' logo" class="h-10 max-w-[150px] object-contain">':'<span class="text-2xl font-bold text-gray-900">'+esc(name)+'</span>';
+ document.querySelectorAll('header a.flex.items-center.space-x-2,footer a.flex.items-center.space-x-2').forEach(a=>a.innerHTML=markup);
+ if(logo){document.querySelectorAll('link[rel~="icon"],link[rel="apple-touch-icon"]').forEach(x=>x.href=logo);if(!document.querySelector('link[rel="icon"]')){const l=document.createElement('link');l.rel='icon';document.head.appendChild(l);l.href=logo}}
+ }
+ async function load(){apply({name:fallback});if(!url||!key)return;try{const r=await fetch(url.replace(/\/$/,'')+'/rest/v1/site_settings?setting_key=eq.brand_settings_json&select=setting_value&limit=1',{headers:{apikey:key,Authorization:'Bearer '+key}});if(!r.ok)return;const rows=await r.json();if(rows.length){const raw=rows[0].setting_value;apply(typeof raw==='string'?JSON.parse(raw):raw)}}catch(e){console.warn('Brand settings could not be loaded',e)}}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load);else load();
+})();
+</script>
 </body>
 </html>
