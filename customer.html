@@ -837,7 +837,39 @@ body.taskmtaani-customer-page footer{display:block!important}
         document.getElementById('location')?.addEventListener('input',calculateQuote);
         document.getElementById('jobType')?.addEventListener('change',calculateQuote);
 
-                bookingForm.addEventListener('submit', async function(e) {
+        
+        async function choosePreferredHelper(cfg,token,serviceId,serviceName,bookingLocation){
+            const headers={apikey:cfg.key,Authorization:'Bearer '+token};
+            const [pr,ps,rv]=await Promise.all([
+                fetch(cfg.url+'/rest/v1/providers?active=eq.true&verification_status=eq.verified&select=id,full_name,profession,service_area,availability,profile_photo_url&order=full_name.asc',{headers}),
+                fetch(cfg.url+'/rest/v1/provider_services?active=eq.true&select=provider_id,service_id',{headers}),
+                fetch(cfg.url+'/rest/v1/reviews?review_type=eq.helper&approved=eq.true&active=eq.true&select=provider_id,rating',{headers})
+            ]);
+            if(!pr.ok)throw Error('Unable to load suitable helpers. Please try again.');
+            const providers=await pr.json(),serviceRows=ps.ok?await ps.json():[],reviews=rv.ok?await rv.json():[];
+            const offered={};serviceRows.forEach(x=>(offered[x.provider_id]??=[]).push(x.service_id));
+            const ratings={};reviews.forEach(x=>{if(!x.provider_id)return;const r=ratings[x.provider_id]??={sum:0,count:0};r.sum+=Number(x.rating||0);r.count++});
+            const norm=v=>String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+            const requested=norm(serviceName),aliases={'dobi laundry':['dobi','laundry','launderer'],'dobi':['dobi','laundry','launderer'],'cleaner':['cleaner','cleaning'],'cook':['cook','cooking','chef'],'driver':['driver','driving'],'gardener':['gardener','gardening'],'plumber':['plumber','plumbing']};
+            const terms=aliases[requested]||[requested],loc=norm(bookingLocation);
+            const candidates=providers.filter(p=>{
+                const mapped=serviceId&&(offered[p.id]||[]).includes(serviceId),profession=norm(p.profession),av=String(p.availability||'').toLowerCase();
+                return (mapped||terms.some(t=>profession===t||profession.includes(t)||t.includes(profession)))&&!(/unavailable|not available|\boff\b|on leave|\bbusy\b/.test(av));
+            }).map(p=>{const rating=ratings[p.id]||{sum:0,count:0},area=norm(p.service_area);return {...p,average:rating.count?rating.sum/rating.count:null,reviews:rating.count,areaMatch:!!(area&&loc&&(area.includes(loc)||loc.includes(area)))};})
+              .sort((a,b)=>Number(b.areaMatch)-Number(a.areaMatch)||(b.average||0)-(a.average||0)||b.reviews-a.reviews);
+            return new Promise(resolve=>{
+                const modal=document.createElement('div');modal.id='helper-choice-modal';modal.className='fixed inset-0 z-[180] bg-slate-950/70 flex items-center justify-center p-3';
+                const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+                const cards=candidates.map(p=>'<label class="flex gap-3 p-3 border rounded-xl cursor-pointer hover:border-emerald-500"><input class="mt-1" type="radio" name="preferred-helper-choice" value="'+esc(p.id)+'"><div class="min-w-0 flex-1"><div class="font-semibold text-gray-900">'+esc(p.full_name)+'</div><div class="text-sm text-gray-600">'+esc(p.profession)+' · '+esc(p.service_area||'Service area not specified')+'</div><div class="text-sm text-amber-600 mt-1">'+(p.average===null?'No customer ratings yet':'★ '+p.average.toFixed(1)+' / 5 · '+p.reviews+' review'+(p.reviews===1?'':'s'))+'</div></div></label>').join('');
+                modal.innerHTML='<div class="w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl p-5 shadow-2xl"><p class="text-xs font-semibold tracking-wide text-emerald-700">TASKMTAANI MATCHES</p><h2 class="text-xl font-bold mt-1">Choose your preferred helper</h2><p class="text-sm text-gray-600 mt-2">These active, verified helpers match your service. Ratings are based on approved reviews from completed bookings. Your choice is a preference; TaskMtaani will confirm the final dispatch.</p><div class="space-y-2 mt-4">'+(cards||'<p class="rounded-xl bg-amber-50 p-4 text-sm text-amber-800">No active verified helpers currently match this request. You can still submit it without a preference.</p>')+'</div><div class="flex flex-col sm:flex-row gap-2 mt-5"><button type="button" id="helper-choice-continue" class="flex-1 rounded-lg bg-emerald-600 text-white font-semibold py-3">Continue with selection</button><button type="button" id="helper-choice-none" class="flex-1 rounded-lg border border-gray-300 py-3 font-semibold">No preference</button></div><p class="text-xs text-gray-500 mt-3">The administrator remains responsible for final dispatch.</p></div>';
+                document.body.appendChild(modal);
+                const finish=value=>{modal.remove();resolve(value)};
+                modal.querySelector('#helper-choice-continue').addEventListener('click',()=>{const chosen=modal.querySelector('input[name="preferred-helper-choice"]:checked');if(!chosen){if(!candidates.length)finish(null);else alert('Please select a helper or choose No preference.');return}finish(chosen.value)});
+                modal.querySelector('#helper-choice-none').addEventListener('click',()=>finish(null));
+            });
+        }
+
+        bookingForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             const service = document.getElementById('service').value;
             const date = document.getElementById('date').value;
@@ -890,8 +922,9 @@ body.taskmtaani-customer-page footer{display:block!important}
                     const sr = await fetch(cfg.url+'/rest/v1/services?name=eq.'+encodeURIComponent(service)+'&select=id&limit=1', {headers:{apikey:cfg.key,Authorization:'Bearer '+token}});
                     if (sr.ok) serviceId = (await sr.json())[0]?.id || null;
                 }
+                const preferredProviderId = await choosePreferredHelper(cfg,token,serviceId,service,location);
                 const payload = {
-                    customer_id:user.id, service_id:serviceId, service_name:service,
+                    customer_id:user.id, preferred_provider_id:preferredProviderId, service_id:serviceId, service_name:service,
                     preferred_date:date, preferred_time:time||null, preferred_gender:gender,
                     job_type:jobType, location, customer_name:name||user.user_metadata?.full_name||'',
                     customer_phone:customerPhone, task_details:details, budget_amount:budget,
@@ -907,7 +940,7 @@ body.taskmtaani-customer-page footer{display:block!important}
                 if (!response.ok) throw new Error((await response.text()) || 'Unable to submit your request.');
                 const saved = await response.json();
                 window.dispatchEvent(new Event('taskmtaani-booking-saved'));
-                alert('Your service request has been submitted. TaskMtaani will review suitable active helpers and an administrator will dispatch the helper. You can check your request status in your customer account.');
+                alert('Your service request has been submitted. Your preferred helper has been recorded where selected. TaskMtaani will review the match and an administrator will confirm dispatch. You can track your request in your customer account.');
                 bookingForm.reset();
                 if (quotePanel) quotePanel.classList.add('hidden');
                 currentQuote = null;
