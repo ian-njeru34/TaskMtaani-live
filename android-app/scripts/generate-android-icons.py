@@ -5,8 +5,9 @@ from pathlib import Path
 from io import BytesIO
 from PIL import Image
 
-ROOT = Path(__file__).resolve().parents[1]
-HTML = (ROOT / "index.html").read_text(encoding="utf-8")
+APP_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
+HTML = (REPO_ROOT / "index.html").read_text(encoding="utf-8")
 url_match = re.search(r'TASKMTAANI_SUPABASE_URL\s*=\s*["\']([^"\']+)', HTML)
 key_match = re.search(r'TASKMTAANI_SUPABASE_ANON_KEY\s*=\s*["\']([^"\']+)', HTML)
 if not url_match or not key_match:
@@ -37,7 +38,7 @@ bbox = emblem.getchannel("A").getbbox()
 if bbox:
     emblem = emblem.crop(bbox)
 
-res_dir = ROOT / "android" / "app" / "src" / "main" / "res"
+res_dir = APP_ROOT / "android" / "app" / "src" / "main" / "res"
 for density, size in [("mdpi",48),("hdpi",72),("xhdpi",96),("xxhdpi",144),("xxxhdpi",192)]:
     folder = res_dir / ("mipmap-" + density)
     folder.mkdir(parents=True, exist_ok=True)
